@@ -12,11 +12,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { getFirebaseApp } from "../utils/firebaseHelper";
 import { child, get, getDatabase, off, onValue, ref } from "firebase/database";
 import { setChatsData } from "../store/chatSlice";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, KeyboardAvoidingView, Platform } from "react-native";
 import colors from "../constants/colors";
 import commonStyles from "../constants/commonStyles";
 import { setStoredUsers } from "../store/userSlice";
 import { setChatMessages, setStarredMessages } from "../store/messagesSlice";
+import ContactScreen from "../screens/ContactScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -73,6 +74,14 @@ const StackNavigator = () => {
           component={ChatSettingsScreen}
           options={{
             headerTitle: "Settings",
+            headerBackTitle: "Back",
+          }}
+        />
+        <Stack.Screen
+          name="Contact"
+          component={ContactScreen}
+          options={{
+            headerTitle: "Contact Info",
             headerBackTitle: "Back",
           }}
         />
@@ -177,14 +186,20 @@ const MainNavigator = (props) => {
   }, []);
 
   if (isLoading) {
+    return (
     <View style={commonStyles.center}>
       <ActivityIndicator size={'large'} color={colors.primary} />
     </View>
+    );
   }
 
 
   return (
-    <StackNavigator />
+    <KeyboardAvoidingView
+          style={{flex: 1}}
+          behavior={ Platform.OS === "ios" ? "padding" : undefined}>
+      <StackNavigator />
+    </KeyboardAvoidingView>
   );
 };
 

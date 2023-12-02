@@ -9,11 +9,12 @@ import {
 import userImage from "../assets/images/defaultimage.png";
 
 import colors from "../constants/colors";
-import { FontAwesome } from "@expo/vector-icons";
-import { lauchImagePicker, uploadImageAsync } from "../utils/imagePickerHelper";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import { launchImagePicker, uploadImageAsync } from "../utils/imagePickerHelper";
 import { updateSignedInUserData } from "../utils/actions/authActions";
 import { updateLoggedInUserData } from "../store/authSlice";
 import { useDispatch } from "react-redux";
+
 
 const ProfileImage = (props) => {
   const dispatch = useDispatch();
@@ -24,12 +25,13 @@ const ProfileImage = (props) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const showEditButton = props.showEditButton && props.showEditButton === true; // check if the property is passed in and if it's true
+  const showRemoveButton = props.showRemoveButton && props.showRemoveButton === true; // check if the property is passed in and if it's true
 
   const userId = props.userId;
 
   const pickImage = async () => {
     try {
-      const tempUri = await lauchImagePicker();
+      const tempUri = await launchImagePicker();
 
       if (!tempUri) return;
 
@@ -51,9 +53,9 @@ const ProfileImage = (props) => {
     }
   };
 
-  const Container = showEditButton ? TouchableOpacity : View;
+  const Container = props.onPress || showEditButton ? TouchableOpacity : View;
   return (
-    <Container onPress={pickImage}>
+    <Container style={props.style} onPress={props.onPress || pickImage}>
       {isLoading ? (
         <View
           height={props.size}
@@ -72,11 +74,22 @@ const ProfileImage = (props) => {
         />
       )}
 
-      {showEditButton && !isLoading && (
+      {
+        showEditButton && !isLoading && 
         <View style={styles.editIconContainer}>
           <FontAwesome name="pencil" size={15} color="black" />
         </View>
-      )}
+      
+      }
+
+      {
+        showRemoveButton && !isLoading && 
+        <View style={styles.removeIconContainer}>
+          <Ionicons name="close" size={15} color="white" />        
+        </View>
+      
+      }
+
     </Container>
   );
 };
@@ -91,14 +104,22 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     right: -12,
-    backgroundColor: colors.nearlyWhite,
+    backgroundColor: colors.lightGrey,
     borderRadius: 20,
     padding: 8,
+  },
+  removeIconContainer: {
+    position: "absolute",
+    bottom: -3,
+    right: -3,    
+    backgroundColor: colors.grey,
+    borderRadius: 20,
+    padding: 3,
   },
   loadingContainer: {
     alignItems: "center",
     justifyContent: "center",
-  },
+  }
 });
 
 export default ProfileImage;

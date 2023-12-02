@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import { StyleSheet, Text } from "react-native";
+import { StyleSheet, Text, LogBox } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useState } from "react";
@@ -12,6 +12,7 @@ import { MenuProvider } from "react-native-popup-menu";
 
 //AsyncStorage.clear(); // force logging out
 SplashScreen.preventAutoHideAsync();
+LogBox.ignoreLogs(['Selector unknown returned a different result when called with the same parameters']);
 
 export default function App() {
 
