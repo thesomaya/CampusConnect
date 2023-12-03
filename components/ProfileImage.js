@@ -1,97 +1,92 @@
-import React, { useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import userImage from "../assets/images/defaultimage.png";
-
-import colors from "../constants/colors";
+import React, { useState } from  'react';
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
-import { launchImagePicker, uploadImageAsync } from "../utils/imagePickerHelper";
-import { updateSignedInUserData } from "../utils/actions/authActions";
-import { updateLoggedInUserData } from "../store/authSlice";
-import { useDispatch } from "react-redux";
 
+import userImage from "../assets/images/defaultimage.png";
+import colors from '../constants/colors';
+import { launchImagePicker, uploadImageAsync } from '../utils/imagePickerHelper';
+import { updateSignedInUserData } from '../utils/actions/authActions';
+import { useDispatch } from 'react-redux';
+import { updateLoggedInUserData } from '../store/authSlice';
+import { updateChatData } from '../utils/actions/chatActions';
 
-const ProfileImage = (props) => {
-  const dispatch = useDispatch();
+const ProfileImage = props => {
+    const dispatch = useDispatch();
 
-  const source = props.uri ? { uri: props.uri } : userImage;
+    const source = props.uri ?  { uri: props.uri } : userImage;
 
-  const [image, setImage] = useState(source);
-  const [isLoading, setIsLoading] = useState(false);
+    const [image, setImage] = useState(source);
+    const [isLoading, setIsLoading] = useState(false);
 
-  const showEditButton = props.showEditButton && props.showEditButton === true; // check if the property is passed in and if it's true
-  const showRemoveButton = props.showRemoveButton && props.showRemoveButton === true; // check if the property is passed in and if it's true
+    const showEditButton = props.showEditButton && props.showEditButton === true;
+    const showRemoveButton = props.showRemoveButton && props.showRemoveButton === true;
 
-  const userId = props.userId;
+    const userId = props.userId;
+    const chatId = props.chatId;
 
-  const pickImage = async () => {
-    try {
-      const tempUri = await launchImagePicker();
+    const pickImage = async () => {
+        try {
+            const tempUri = await launchImagePicker();
 
-      if (!tempUri) return;
+            if (!tempUri) return;
 
-      setIsLoading(true);
-      const uploadUrl = await uploadImageAsync(tempUri);
-      setIsLoading(false);
+            // Upload the image
+            setIsLoading(true);
+            const uploadUrl = await uploadImageAsync(tempUri, chatId !== undefined);
+            setIsLoading(false);
 
-      if (!uploadUrl) {
-        throw new Error("Could not upload image.");
-      }
-      const newData = { profilePicture: uploadUrl };
+            if (!uploadUrl) {
+                throw new Error("Could not upload image");
+            }
 
-      await updateSignedInUserData(userId, newData);
-      dispatch(updateLoggedInUserData({ newData }));
-      setImage({ uri: uploadUrl });
-    } catch (error) {
-      console.log(error);
-      setIsLoading(false);
+            if (chatId) {
+              await updateChatData(chatId, userId, { chatImage: uploadUrl })
+            } else {
+              const newData = { profilePicture: uploadUrl };
+              await updateSignedInUserData(userId, newData);
+              dispatch(updateLoggedInUserData({ newData }));
+            } 
+
+            setImage({ uri: uploadUrl });
+        }
+        catch (error) {
+            console.log(error);
+            setIsLoading(false);
+        }
     }
-  };
 
-  const Container = props.onPress || showEditButton ? TouchableOpacity : View;
-  return (
-    <Container style={props.style} onPress={props.onPress || pickImage}>
-      {isLoading ? (
-        <View
-          height={props.size}
-          width={props.size}
-          style={styles.loadingContainer}
-        >
-          <ActivityIndicator size={"small"} color={colors.primary} />
-        </View>
-      ) : (
-        <Image
-          style={{
-            ...styles.image,
-            ...{ height: props.size, width: props.size },
-          }}
-          source={image}
-        />
-      )}
+    const Container = props.onPress || showEditButton ? TouchableOpacity : View;
 
-      {
-        showEditButton && !isLoading && 
-        <View style={styles.editIconContainer}>
-          <FontAwesome name="pencil" size={15} color="black" />
-        </View>
-      
-      }
+    return (
+        <Container style={props.style} onPress={props.onPress || pickImage}>
 
-      {
-        showRemoveButton && !isLoading && 
-        <View style={styles.removeIconContainer}>
-          <Ionicons name="close" size={15} color="white" />        
-        </View>
-      
-      }
+            {
+                isLoading ?
+                <View height={props.size} width={props.size} style={styles.loadingContainer}>
+                    <ActivityIndicator size={'small'} color={colors.primary} />
+                </View> :
+                <Image
+                    style={{ ...styles.image, ...{ width: props.size, height: props.size } }}
+                    source={image}/>
+            }
 
-    </Container>
-  );
+            {
+              showEditButton && !isLoading && 
+              <View style={styles.editIconContainer}>
+                <FontAwesome name="pencil" size={15} color="black" />
+              </View>
+          
+            }
+
+            {
+              showRemoveButton && !isLoading && 
+              <View style={styles.removeIconContainer}>
+                <Ionicons name="close" size={15} color="white" />        
+              </View>      
+            }
+
+        </Container>
+    )
 };
 
 const styles = StyleSheet.create({
@@ -123,3 +118,4 @@ const styles = StyleSheet.create({
 });
 
 export default ProfileImage;
+

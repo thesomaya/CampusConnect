@@ -18,6 +18,7 @@ import commonStyles from "../constants/commonStyles";
 import { setStoredUsers } from "../store/userSlice";
 import { setChatMessages, setStarredMessages } from "../store/messagesSlice";
 import ContactScreen from "../screens/ContactScreen";
+import DataListScreen from "../screens/DataListScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -73,8 +74,9 @@ const StackNavigator = () => {
           name="ChatSettings"
           component={ChatSettingsScreen}
           options={{
-            headerTitle: "Settings",
+            headerTitle: "",
             headerBackTitle: "Back",
+            headerShadowVisible: false
           }}
         />
         <Stack.Screen
@@ -82,6 +84,15 @@ const StackNavigator = () => {
           component={ContactScreen}
           options={{
             headerTitle: "Contact Info",
+            headerBackTitle: "Back",
+          }}
+        />
+
+        <Stack.Screen
+          name="DataList"
+          component={DataListScreen}
+          options={{
+            headerTitle: "",
             headerBackTitle: "Back",
           }}
         />
@@ -132,6 +143,7 @@ const MainNavigator = (props) => {
           const data = chatSnapshot.val();
 
           if (data) {
+            if (!data.users.includes(userData.userId)) return;
             data.key = chatSnapshot.key;
 
             data.users.forEach(userId => {

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Button, FlatList, Touchable, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Button, FlatList, TouchableOpacity } from 'react-native';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import { useSelector } from 'react-redux';
 import CustomHeaderButton from '../components/CustomHeaderButton';
@@ -14,8 +14,8 @@ const ChatListScreen = props => {
     const selectedUserList = props.route?.params?.selectedUsers;
     const chatName = props.route?.params?.chatName;
 
-    const userData =  useSelector(state => state.auth.userData);
-    const storedUsers =  useSelector(state => state.users.storedUsers);
+    const userData = useSelector(state => state.auth.userData);
+    const storedUsers = useSelector(state => state.users.storedUsers);
     const userChats = useSelector(state => {
         const chatsData = state.chats.chatsData;
         return Object.values(chatsData).sort((a, b) => {
@@ -41,32 +41,32 @@ const ChatListScreen = props => {
         if (!selectedUser && !selectedUserList) {
             return;
         }
-        
+
         let chatData;
         let navigationProps;
 
         if (selectedUser) {
             chatData = userChats.find(cd => !cd.isGroupChat && cd.users.includes(selectedUser))
         }
+
         if (chatData) {
             navigationProps = { chatId: chatData.key }
-        } else {
-            const chatUsers = selectedUserList || [selectedUser, userData.userId];
-            if (!chatUsers.includes(userData.userId)) {
+        }
+        else {
+            const chatUsers = selectedUserList || [selectedUser];
+            if (!chatUsers.includes(userData.userId)){
                 chatUsers.push(userData.userId);
             }
 
             navigationProps = {
-                newChatData: { 
+                newChatData: {
                     users: chatUsers,
                     isGroupChat: selectedUserList !== undefined,
+                    chatName
                 }
             }
-
-            if (chatName) {
-                navigationProps.chatName = chatName;
-            }
         }
+        
         
 
         props.navigation.navigate("ChatScreen", navigationProps);
@@ -78,7 +78,7 @@ const ChatListScreen = props => {
         <PageTitle text="Chats" />
 
             <View>
-                <TouchableOpacity onPress={() => props.navigation.navigate("NewChat", {isGroupChat: true})} >
+                <TouchableOpacity onPress={() => props.navigation.navigate("NewChat", { isGroupChat: true })}>
                     <Text style={styles.newGroupText}>New Group</Text>
                 </TouchableOpacity>
             </View>
@@ -89,24 +89,24 @@ const ChatListScreen = props => {
                     const chatData = itemData.item;
                     const chatId = chatData.key;
                     const isGroupChat = chatData.isGroupChat;
-                    
+
                     let title = "";
                     const subTitle = chatData.latestMessageText || "New chat";
                     let image = "";
 
                     if (isGroupChat) {
-                        title = chatData.chatName;
-                    } else {
+                        title = chatData.chatName;  
+                        image = chatData.chatImage;
+                    }
+                    else {
                         const otherUserId = chatData.users.find(uid => uid !== userData.userId);
                         const otherUser = storedUsers[otherUserId];
-    
+
                         if (!otherUser) return;
-    
-                        title = `${otherUser.firstLast}`;
+
+                        title = `${otherUser.firstName} ${otherUser.lastName}`;
                         image = otherUser.profilePicture;
                     }
-
-                    
 
                     return <DataItem
                                 title={title}
@@ -128,8 +128,7 @@ const styles = StyleSheet.create({
     newGroupText: {
         color: colors.blue,
         fontSize: 17,
-        marginBottom: 10,
-        marginTop: 5
+        marginBottom: 5
     }
 })
 
