@@ -1,7 +1,7 @@
 import { child, get, getDatabase, push, ref, remove, set, update } from "firebase/database";
 import { getFirebaseApp } from "../firebaseHelper";
-import { addUserChat, deleteUserChat, getUserChats } from "./userActions";
 import { getUserPushTokens } from "./authActions";
+import { addUserChat, deleteUserChat, getUserChats } from "./userActions";
 
 export const createChat = async (loggedInUserId, chatData) => {
 
@@ -28,8 +28,9 @@ export const createChat = async (loggedInUserId, chatData) => {
 
 export const sendTextMessage = async (chatId, senderData, messageText, replyTo, chatUsers) => {
     await sendMessage(chatId, senderData.userId, messageText, null, replyTo, null);
+
     const otherUsers = chatUsers.filter(uid => uid !== senderData.userId);
-    await sendPushNotificationForUsers( otherUsers, `${senderData.firstLast}`, messageText , chatId)
+    await sendPushNotificationForUsers(otherUsers, `${senderData.firstName} ${senderData.lastName}`, messageText, chatId);
 }
 
 export const sendInfoMessage = async (chatId, senderId, messageText) => {
@@ -38,8 +39,9 @@ export const sendInfoMessage = async (chatId, senderId, messageText) => {
 
 export const sendImage = async (chatId, senderData, imageUrl, replyTo, chatUsers) => {
     await sendMessage(chatId, senderData.userId, 'Image', imageUrl, replyTo, null);
+
     const otherUsers = chatUsers.filter(uid => uid !== senderData.userId);
-    await sendPushNotificationForUsers( otherUsers, `${senderData.firstLast}`, `${senderData.firstName} sent an image`, chatId )
+    await sendPushNotificationForUsers(otherUsers, `${senderData.firstName} ${senderData.lastName}`, `${senderData.firstName} sent an image`, chatId);
 }
 
 export const updateChatData = async (chatId, userId, chatData) => {
@@ -169,24 +171,24 @@ export const addUsersToChat = async (userLoggedInData, usersToAddData, chatData)
 
 const sendPushNotificationForUsers = (chatUsers, title, body, chatId) => {
     chatUsers.forEach(async uid => {
+        console.log("test");
         const tokens = await getUserPushTokens(uid);
 
-        for (const key in tokens) {
+        for(const key in tokens) {
             const token = tokens[key];
 
             await fetch("https://exp.host/--/api/v2/push/send", {
-            method: "POST",
-            headers: {
-            "Content-Type": "application/json"
-            },
-            body: JSON.stringify ({
-                to: token,
-                title,
-                body,
-                data: { chatId }
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    to: token,
+                    title,
+                    body,
+                    data: { chatId }
+                })
             })
-        })
-
-        } 
+        }
     })
 }

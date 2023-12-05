@@ -121,7 +121,18 @@ const ChatSettingsScreen = props => {
                 onInputChanged={inputChangedHandler}
                 errorText={formState.inputValidities["chatName"]}
             />
+            { showSuccessMessage && <Text>Saved!</Text> }
 
+            {
+                isLoading ?
+                <ActivityIndicator size={'small'} color={colors.primary} /> :
+                hasChanges() && <SubmitButton
+                    title="Save changes"
+                    color={colors.primary}
+                    onPress={saveHandler}
+                    disabled={!formState.formIsValid}
+                />
+            }
 
             <View style={styles.sectionContainer}>
                 <Text style={styles.heading}>{chatData.users.length} Participants</Text>
@@ -157,21 +168,6 @@ const ChatSettingsScreen = props => {
                     />
                 }
             </View>
-
-
-
-            { showSuccessMessage && <Text>Saved!</Text> }
-
-            {
-                isLoading ?
-                <ActivityIndicator size={'small'} color={colors.primary} /> :
-                hasChanges() && <SubmitButton
-                    title="Save changes"
-                    color={colors.primary}
-                    onPress={saveHandler}
-                    disabled={!formState.formIsValid}
-                />
-            }
 
             <DataItem
                 type={"link"}

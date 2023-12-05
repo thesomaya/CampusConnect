@@ -1,0 +1,10 @@
+Features to implement:
+- sign up roles (students, professors, staff)
+- email verification (altinbas domain)
+- deleting messages and chats
+- bloking and reporting feauters
+- admin for group chats
+- group description
+- sending documents
+- announcements section
+- 

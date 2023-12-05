@@ -21,7 +21,7 @@ import { setStoredUsers } from "../store/userSlice";
 import { setChatMessages, setStarredMessages } from "../store/messagesSlice";
 import ContactScreen from "../screens/ContactScreen";
 import DataListScreen from "../screens/DataListScreen";
-import { useNavigation } from "@react-navigation/native";
+import { StackActions, useNavigation } from "@react-navigation/native";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -277,7 +277,7 @@ async function registerForPushNotificationsAsync() {
       alert('Failed to get push token for push notification!');
       return;
     }
-    token = (await Notifications.getExpoPushTokenAsync()).data;
+    token = (await Notifications.getExpoPushTokenAsync({ projectId: '22a6cc2b-b04f-4656-b898-928227ed5f87' })).data;
   } else {
     console.log('Must use physical device for Push Notifications');
   }
