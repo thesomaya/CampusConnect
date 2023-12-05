@@ -39,12 +39,13 @@ export const validateLength = (id, value, minLength, maxLength, allowEmpty) => {
     return validationResult && validationResult[id];
 }
 
-export const validateStudentNumber = (id, value) => {
+export const validateStudentNumber = (id, value, selectedRole) => {
+    console.log(selectedRole);
     const constraints = {
-        presence: { allowEmpty : false },
+        presence: selectedRole === "student" ? { allowEmpty: false } : true,
     };
-
-    if (value !== "") {
+    
+    if (selectedRole === "student" && value !== "") {
         constraints.numericality = {
             onlyInteger: true,
             greaterThan: 200000000,
@@ -58,22 +59,38 @@ export const validateStudentNumber = (id, value) => {
     return validationResult && validationResult[id];
 }
 
-export const validateEmail = (id, value) => {
+export const validateEmail = (id, value, selectedRole) => {
+    
     const constraints = {
         presence: { allowEmpty : false },
     };
 
-    if (value !== "") {
-        
-        constraints.email = true
-        
-    };
-    
+    let validSchoolDomain;
+  
+    if (selectedRole && selectedRole === 'student') {
+      validSchoolDomain = 'ogr.altinbas.edu.tr';
+    } else if (selectedRole && selectedRole === 'facultyMember') {
+      validSchoolDomain = 'altinbas.edu.tr';
+    } else {
+        validSchoolDomain = 'ogr.altinbas.edu.tr' || 'altinbas.edu.tr';
+    }
+  
+    const isValidEmail = /^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value);
+    const isSchoolDomain = value.endsWith(`@${validSchoolDomain}`);
+  
+    if (!isValidEmail) {
+      return ['Please enter a valid email address.'] ;
+    }
+  
+    if (!isSchoolDomain) {
+      return  [`Please enter an email address from ${validSchoolDomain}`];
+    }
+  
     const validationResult = validate({ [id]: value}, {[id]: constraints});
     
     return validationResult && validationResult[id];
-}
-
+  };
+  
 export const validatePassword = (id, value) => {
     const constraints = {
         presence: { allowEmpty : false },

@@ -9,7 +9,7 @@ import { getUserData } from './userActions';
 
 let timer;
 
-export const signUp = (firstName, lastName, email, password) => {
+export const signUp = (firstName, lastName, studentNumber, email, password, selectedRole) => {
     return async dispatch => {
         const app = getFirebaseApp();
         const auth = getAuth(app);
@@ -22,13 +22,10 @@ export const signUp = (firstName, lastName, email, password) => {
             const expiryDate = new Date(expirationTime);
             const timeNow = new Date();
             const millisecondsUntilExpiry = expiryDate - timeNow;
-
-            const userData = await createUser(firstName, lastName, email, uid);
-
+            const userData = await createUser(firstName, lastName, studentNumber, email, selectedRole, uid);
             dispatch(authenticate({ token: accessToken, userData }));
             saveDataToStorage(accessToken, uid, expiryDate);
             await storePushToken(userData);
-
             timer = setTimeout(() => {
                 dispatch(userLogout(userData));
             }, millisecondsUntilExpiry);
@@ -111,13 +108,15 @@ export const updateSignedInUserData = async (userId, newData) => {
     await update(childRef, newData);
 }
 
-const createUser = async (firstName, lastName, email, userId) => {
+const createUser = async (firstName, lastName, studentNumber, email, selectedRole, userId) => {
     const firstLast = `${firstName} ${lastName}`.toLowerCase();
     const userData = {
         firstName,
         lastName,
         firstLast,
+        studentNumber,
         email,
+        selectedRole,
         userId,
         signUpDate: new Date().toISOString()
     };

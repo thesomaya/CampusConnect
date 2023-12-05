@@ -1,4 +1,4 @@
-import * as Device from  "expo-device";
+import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import React, { useEffect, useRef, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -14,14 +14,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { getFirebaseApp } from "../utils/firebaseHelper";
 import { child, get, getDatabase, off, onValue, ref } from "firebase/database";
 import { setChatsData } from "../store/chatSlice";
-import { ActivityIndicator, View, KeyboardAvoidingView, Platform } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, View } from "react-native";
 import colors from "../constants/colors";
 import commonStyles from "../constants/commonStyles";
 import { setStoredUsers } from "../store/userSlice";
 import { setChatMessages, setStarredMessages } from "../store/messagesSlice";
 import ContactScreen from "../screens/ContactScreen";
 import DataListScreen from "../screens/DataListScreen";
-import { StackActions, useNavigation } from "@react-navigation/native";
+import { StackActions, useNavigation } from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -86,11 +86,10 @@ const StackNavigator = () => {
           name="Contact"
           component={ContactScreen}
           options={{
-            headerTitle: "Contact Info",
+            headerTitle: "Contact info",
             headerBackTitle: "Back",
           }}
         />
-
         <Stack.Screen
           name="DataList"
           component={DataListScreen}
@@ -119,11 +118,10 @@ const MainNavigator = (props) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const userData = useSelector(state => state.auth.userData);
-  const storedUsers =  useSelector(state => state.users.storedUsers);
+  const storedUsers = useSelector(state => state.users.storedUsers);
 
   const [expoPushToken, setExpoPushToken] = useState('');
-  //console.log(expoPushToken);
-
+  // console.log(expoPushToken)
   const notificationListener = useRef();
   const responseListener = useRef();
 
@@ -131,17 +129,19 @@ const MainNavigator = (props) => {
     registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
 
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      //Handle received notification
+      // Handle received notification
     });
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       const { data } = response.notification.request.content;
-      const chatId = data ["chatId"];
+      const chatId = data["chatId"];
+
       if (chatId) {
         const pushAction = StackActions.push("ChatScreen", { chatId });
         navigation.dispatch(pushAction);
-      } else {
-        console.log("No chatId sent with the notification");
+      }
+      else {
+        console.log("No chat id sent with notification");
       }
     });
 
@@ -150,7 +150,6 @@ const MainNavigator = (props) => {
       Notifications.removeNotificationSubscription(responseListener.current);
     };
   }, []);
-
 
   useEffect(() => {
     console.log("Subscribing to firebase listeners");
@@ -178,7 +177,11 @@ const MainNavigator = (props) => {
           const data = chatSnapshot.val();
 
           if (data) {
-            if (!data.users.includes(userData.userId)) return;
+
+            if (!data.users.includes(userData.userId)) {
+              return;
+            }
+
             data.key = chatSnapshot.key;
 
             data.users.forEach(userId => {
@@ -209,7 +212,7 @@ const MainNavigator = (props) => {
 
         onValue(messagesRef, messagesSnapshot => {
           const messagesData = messagesSnapshot.val();
-          dispatch(setChatMessages({chatId, messagesData }));
+          dispatch(setChatMessages({ chatId, messagesData }));
         })
 
         if (chatsFoundCount == 0) {
@@ -233,18 +236,16 @@ const MainNavigator = (props) => {
   }, []);
 
   if (isLoading) {
-    return (
     <View style={commonStyles.center}>
       <ActivityIndicator size={'large'} color={colors.primary} />
     </View>
-    );
   }
 
 
   return (
     <KeyboardAvoidingView
-          style={{flex: 1}}
-          behavior={ Platform.OS === "ios" ? "padding" : undefined}>
+        style={{ flex: 1 }}
+        behavior={ Platform.OS === "ios" ? "padding" : undefined}>
       <StackNavigator />
     </KeyboardAvoidingView>
   );
@@ -252,8 +253,6 @@ const MainNavigator = (props) => {
 
 export default MainNavigator;
 
-
-//{ projectId: '22a6cc2b-b04f-4656-b898-928227ed5f87' }
 async function registerForPushNotificationsAsync() {
   let token;
 
@@ -277,11 +276,10 @@ async function registerForPushNotificationsAsync() {
       alert('Failed to get push token for push notification!');
       return;
     }
-    token = (await Notifications.getExpoPushTokenAsync({ projectId: '22a6cc2b-b04f-4656-b898-928227ed5f87' })).data;
+    token = (await Notifications.getExpoPushTokenAsync()).data;
   } else {
     console.log('Must use physical device for Push Notifications');
   }
 
   return token;
 }
-

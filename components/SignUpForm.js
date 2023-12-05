@@ -6,7 +6,8 @@ import { Feather, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { validateInput } from '../utils/actions/formActions';
 import { reducer } from '../utils/reducers/formReducer';
 import { signUp } from '../utils/actions/authActions';
-import { ActivityIndicator, Alert } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import { Picker } from "@react-native-picker/picker";
 import colors from '../constants/colors';
 import { useDispatch } from 'react-redux';
 
@@ -17,6 +18,8 @@ const initialState = {
         studentNumber: "",
         email: "",
         password: "",
+        selectedRole: "student",
+           
     },
     inputValidities: {
         firstName: false,
@@ -24,6 +27,7 @@ const initialState = {
         studentNumber: false,
         email: false,
         password: false,
+        
     },
     formIsValid: false
 }
@@ -37,9 +41,9 @@ const SignUpForm = props => {
     const [formState, dispatchFormState] = useReducer(reducer, initialState);
 
     const inputChangedHandler = useCallback((inputId, inputValue) => {
-        const result = validateInput(inputId, inputValue);
-        dispatchFormState({ inputId, validationResult: result, inputValue })
-    }, [dispatchFormState]);
+        const result = validateInput(inputId, inputValue, formState.inputValues.selectedRole);
+        dispatchFormState({ inputId, validationResult: result, inputValue, selectedRole: formState.inputValues.selectedRole })
+    }, [dispatchFormState, formState]);
 
     useEffect(() => {
         if (error) {
@@ -49,25 +53,38 @@ const SignUpForm = props => {
 
     const authHandler = useCallback(async () => {
         try {
-            setIsLoading(true);
-
             const action = signUp(
                 formState.inputValues.firstName,
                 formState.inputValues.lastName,
-                formState.inputValues.studentNumber,        
+                formState.inputValues.studentNumber,       
                 formState.inputValues.email,
                 formState.inputValues.password,
+                formState.inputValues.selectedRole,
             );
             setError(null);
-            await dispatch(action);    
+            await dispatch(action);
         } catch (error) {
             setError(error.message);
             setIsLoading(false);
         }
     }, [dispatch, formState]);
 
-    return (
-            <>
+    return (   
+        <>
+
+                <View >
+                    <Text style={{marginTop: -50,fontFamily: "bold", fontSize: 14}}>Select your role</Text>
+                    <Picker
+                        selectedValue={formState.inputValues.selectedRole}
+                        itemStyle={{  fontFamily:"regular", fontSize:14, marginTop: -60, marginBottom: -40 }}
+                        onValueChange={(itemValue) => inputChangedHandler("selectedRole", itemValue)}>
+                        <Picker.Item label="Student" value="student" />
+                        <Picker.Item label="Faculty Member" value="facultyMember" />
+                        
+                    
+                    </Picker>   
+                </View>
+                
                 <Input
                     id="firstName"
                     label="First name"
@@ -86,6 +103,9 @@ const SignUpForm = props => {
                     autoCapitalize="none"
                     errorText={formState.inputValidities["lastName"]} />
 
+                
+                {
+                    formState.inputValues.selectedRole === "student" &&
                     <Input
                     id="studentNumber"
                     label="Student Number"
@@ -93,7 +113,8 @@ const SignUpForm = props => {
                     iconPack={FontAwesome5}
                     onInputChanged={inputChangedHandler}
                     errorText={formState.inputValidities["studentNumber"]} />
-
+                }
+                
                 <Input
                     id="email"
                     label="Email"

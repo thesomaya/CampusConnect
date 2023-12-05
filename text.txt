@@ -8,3 +8,6 @@ Features to implement:
 - sending documents
 - announcements section
 - 
+
+Bug Fixes:
+- when changing email from settings it doesn't check if email is already in use
