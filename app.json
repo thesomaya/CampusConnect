@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "CampusConnect",
-    "slug": "CampusConnect",
+    "slug": "campusconnect",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -25,6 +25,25 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./local/assets/notification-icon.png",
+          "color": "#ffffff",
+          "sounds": [
+            "./local/assets/notification-sound.wav",
+            "./local/assets/notification-sound-other.wav"
+          ]
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "22a6cc2b-b04f-4656-b898-928227ed5f87"
+      }
+    },
+    "owner": "somaia.mohamed"
   }
 }
