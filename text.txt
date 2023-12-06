@@ -1,5 +1,5 @@
 Features to implement:
-- sign up roles (students, professors, staff)
+- sign up roles (students, professors, staff) ---- done
 - email verification (altinbas domain)
 - deleting messages and chats
 - bloking and reporting feauters

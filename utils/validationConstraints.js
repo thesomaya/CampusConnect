@@ -40,24 +40,26 @@ export const validateLength = (id, value, minLength, maxLength, allowEmpty) => {
 }
 
 export const validateStudentNumber = (id, value, selectedRole) => {
-    console.log(selectedRole);
     const constraints = {
-        presence: selectedRole === "student" ? { allowEmpty: false } : true,
+      presence: {
+        allowEmpty: selectedRole !== "student",
+      },
     };
-    
-    if (selectedRole === "student" && value !== "") {
-        constraints.numericality = {
-            onlyInteger: true,
-            greaterThan: 200000000,
-            lessThanOrEqualTo: 300000000,
-            message: "is not valid."
-          }
-        }
-    
-    const validationResult = validate({ [id]: value}, {[id]: constraints});
-    
+  
+    if (value !== "") {
+      constraints.numericality = {
+        onlyInteger: true,
+        greaterThan: 200000000,
+        lessThanOrEqualTo: 300000000,
+        message: "is not valid.",
+      };
+    }
+  
+    const validationResult = validate({ [id]: value }, { [id]: constraints });
+  
     return validationResult && validationResult[id];
-}
+  };
+  
 
 export const validateEmail = (id, value, selectedRole) => {
     

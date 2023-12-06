@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import PageContainer from '../components/PageContainer';
 import SignInForm from '../components/SignInForm';
 import SignUpForm from '../components/SignUpForm';
+import SignUp from '../components/SignUp';
 import colors from '../constants/colors';
 import logo from '../assets/images/CampusConnectLogo.png';
 
@@ -30,7 +31,7 @@ const AuthScreen = props => {
 
                     {
                         isSignUp ?
-                        <SignUpForm /> :
+                        <SignUp /> :
                         <SignInForm />
                     }
 

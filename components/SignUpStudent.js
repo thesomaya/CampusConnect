@@ -1,4 +1,3 @@
-
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import Input from '../components/Input';
 import SubmitButton from '../components/SubmitButton';
@@ -16,7 +15,7 @@ const initialState = {
     inputValues: {
         firstName: "",
         lastName: "",
-        //studentNumber: "", 
+        studentNumber: "",
         email: "",
         password: "",
         selectedRole: "student",
@@ -25,7 +24,7 @@ const initialState = {
     inputValidities: {
         firstName: false,
         lastName: false,
-        //studentNumber: true,
+        studentNumber: false,
         email: false,
         password: false,
         
@@ -58,8 +57,7 @@ const SignUpForm = props => {
             const action = signUp(
                 formState.inputValues.firstName,
                 formState.inputValues.lastName,
-                
-                //formState.inputValues.studentNumber,       
+                formState.inputValues.studentNumber,       
                 formState.inputValues.email,
                 formState.inputValues.password,
                 formState.inputValues.selectedRole,
@@ -74,19 +72,6 @@ const SignUpForm = props => {
 
     return (   
         <>
-
-                <View >
-                    <Text style={{marginTop: -50,fontFamily: "bold", fontSize: 14}}>Select your role</Text>
-                    <Picker
-                        selectedValue={formState.inputValues.selectedRole}
-                        itemStyle={{  fontFamily:"regular", fontSize:14, marginTop: -60, marginBottom: -40 }}
-                        onValueChange={(itemValue) => inputChangedHandler("selectedRole", itemValue)}>
-                        <Picker.Item label="Student" value="student" />
-                        <Picker.Item label="Faculty Member" value="facultyMember" />
-                        
-                    
-                    </Picker>   
-                </View>
                 
                 <Input
                     id="firstName"
@@ -115,7 +100,7 @@ const SignUpForm = props => {
                     icon="university"
                     iconPack={FontAwesome5}
                     onInputChanged={inputChangedHandler}
-                    errorText={formState.inputValidities["studentNumber"]} /> 
+                    errorText={formState.inputValidities["studentNumber"]} />
                 }
                 
                 <Input
@@ -152,4 +137,3 @@ const SignUpForm = props => {
 };
 
 export default SignUpForm;
-

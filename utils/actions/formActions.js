@@ -12,7 +12,8 @@ export const validateInput = (inputId, inputValue, selectedRole) => {
         return validatePassword(inputId, inputValue)
     }
     else if (inputId === "studentNumber") {
-        return validateStudentNumber(inputId, inputValue, selectedRole)
+        return selectedRole === "student" ? validateStudentNumber(inputId, inputValue, selectedRole) : undefined;
+
     }
     else if (inputId === "about") {
         return validateLength(inputId, inputValue, 0, 150, true)
