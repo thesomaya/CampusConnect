@@ -39,7 +39,6 @@ const SignUpForm = props => {
 
     const inputChangedHandler = useCallback((inputId, inputValue) => {
         const result = validateInput(inputId, inputValue, formState.inputValues.selectedRole);
-        console.log(result);
         dispatchFormState({ inputId, validationResult: result, inputValue, selectedRole: formState.inputValues.selectedRole })
     }, [dispatchFormState, formState]);
 

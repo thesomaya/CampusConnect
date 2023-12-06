@@ -20,6 +20,7 @@ const CoursesScreen = props => {
             return new Date(b.updatedAt) - new Date(a.updatedAt);
         });
     });
+    const filteredUserChats = userChats.filter(chat => chat.isCourseChat);
 
     useEffect(() => {
 
@@ -46,8 +47,9 @@ const CoursesScreen = props => {
             navigationProps = {
                 newChatData: {
                     users: chatUsers,
-                    isCourseChat: selectedUserList !== undefined,
-                    chatName
+                    isGroupChat: selectedUserList !== undefined,
+                    isCourseChat: true,
+                    ...(selectedUserList && { chatName }),
                 }
             }
         }
@@ -61,19 +63,21 @@ const CoursesScreen = props => {
     return <PageContainer>
 
         <PageTitle text="Courses" />
-
-            <View>
-                <TouchableOpacity onPress={() => props.navigation.navigate("NewChat", { isGroupChat: true })}>
-                    <Text style={styles.newGroupText}>New Course</Text>
-                </TouchableOpacity>
-            </View>
+            {   
+                userData.selectedRole == "facultyMember" &&
+                <View>
+                    <TouchableOpacity onPress={() => props.navigation.navigate("NewChat", { isGroupChat: true , isCourseChat: true })}>
+                        <Text style={styles.newGroupText}>New Course</Text>
+                    </TouchableOpacity>
+                </View>
+            }
 
             <FlatList
-                data={userChats}
+                data={filteredUserChats}
                 renderItem={(itemData) => {
-                    const chatData = itemData.item;
-                    const chatId = chatData.key;
-                    const isGroupChat = chatData.isGroupChat;
+                  const chatData = itemData.item;
+                  const chatId = chatData.key;
+                  const isGroupChat = chatData.isGroupChat;
 
                     let title = "";
                     const subTitle = chatData.latestMessageText || "New chat";

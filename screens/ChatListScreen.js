@@ -22,6 +22,8 @@ const ChatListScreen = props => {
             return new Date(b.updatedAt) - new Date(a.updatedAt);
         });
     });
+    const filteredUserChats = userChats.filter(chat => !chat.isCourseChat);
+
 
     useEffect(() => {
         props.navigation.setOptions({
@@ -62,6 +64,7 @@ const ChatListScreen = props => {
                 newChatData: {
                     users: chatUsers,
                     isGroupChat: selectedUserList !== undefined,
+                    isCourseChat: false,
                     ...(selectedUserList && { chatName }),
                 }
             }
@@ -78,13 +81,13 @@ const ChatListScreen = props => {
         <PageTitle text="Chats" />
 
             <View>
-                <TouchableOpacity onPress={() => props.navigation.navigate("NewChat", { isGroupChat: true })}>
+                <TouchableOpacity onPress={() => props.navigation.navigate("NewChat", { isGroupChat: true, isCourseChat: false })}>
                     <Text style={styles.newGroupText}>New Group</Text>
                 </TouchableOpacity>
             </View>
 
             <FlatList
-                data={userChats}
+                data={filteredUserChats}
                 renderItem={(itemData) => {
                     const chatData = itemData.item;
                     const chatId = chatData.key;

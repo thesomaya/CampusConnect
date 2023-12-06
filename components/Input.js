@@ -28,8 +28,19 @@ const Input = props => {
             style={styles.input}
             onChangeText={onChangeText}
             value={value}/>
+        
+        
+        {
+        props.iconRight && 
+        ( <View style={styles.iconRightContainer}>
+            <props.iconPackRight
+              name={props.iconRight}
+              size={props.iconRightSize || 15}
+              style={styles.iconRight}
+            />
+          </View>
+        )}
         </View>
- 
         {
             props.errorText && 
             <View style={styles.errorContainer}>
@@ -62,6 +73,14 @@ const styles = StyleSheet.create({
     },
     icon: {
         marginRight: 10,
+        color: colors.grey,
+    },
+    iconRightContainer: {
+        position: "absolute",
+        right: 10,
+    },
+    iconRight: {
+        marginRight: 0,
         color: colors.grey,
     },
     input: {

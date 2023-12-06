@@ -1,4 +1,4 @@
-import { Feather, FontAwesome } from '@expo/vector-icons';
+import { Feather, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import React, { useCallback, useMemo, useReducer, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
@@ -39,20 +39,26 @@ const SettingsScreen = props => {
     const firstName = userData.firstName || "";
     const lastName = userData.lastName || "";
     const email = userData.email || "";
+    const studentNumber = userData.studentNumber || "";
     const about = userData.about || "";
+    const selectedRole = userData.selectedRole || "";
 
     const initialState = {
         inputValues: {
             firstName,
             lastName,
             email,
+            studentNumber,
             about,
+            selectedRole,
         },
         inputValidities: {
             firstName: undefined,
             lastName: undefined,
             email: undefined,
+            studentNumber: undefined,
             about: undefined,
+            selectedRole: undefined,
         },
         formIsValid: false
     }
@@ -106,6 +112,18 @@ const SettingsScreen = props => {
                 showEditButton={true} />
 
             <Input
+                id="userRole"
+                label="User Role"
+                color="grey"
+                icon="user-o"
+                iconPack={FontAwesome}   
+                initialValue={userData.selectedRole}
+                editable={false}
+                iconRight="lock"
+                iconPackRight={FontAwesome}
+                />
+
+            <Input
                 id="firstName"
                 label="First name"
                 icon="user-o"
@@ -135,6 +153,21 @@ const SettingsScreen = props => {
                 autoCapitalize="none"
                 errorText={formState.inputValidities["email"]}
                 initialValue={userData.email} />
+            
+            {
+                userData.selectedRole === "student" &&
+                <Input
+                id="studentNumber"
+                label="Student Number"
+                icon="university"
+                color="grey"
+                iconPack={FontAwesome5}
+                onInputChanged={inputChangedHandler}
+                initialValue={userData.studentNumber}
+                editable={false}
+                iconRight="lock"
+                iconPackRight={FontAwesome} />
+            }
 
             <Input
                 id="about"
