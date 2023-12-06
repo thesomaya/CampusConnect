@@ -62,28 +62,27 @@ export const validateStudentNumber = (id, value, selectedRole) => {
   
 
 export const validateEmail = (id, value, selectedRole) => {
-    
     const constraints = {
         presence: { allowEmpty : false },
     };
 
     let validSchoolDomain;
-  
+    const isValidEmail = /^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value);
+
     if (selectedRole && selectedRole === 'student') {
       validSchoolDomain = 'ogr.altinbas.edu.tr';
     } else if (selectedRole && selectedRole === 'facultyMember') {
       validSchoolDomain = 'altinbas.edu.tr';
-    } else {
-        validSchoolDomain = 'ogr.altinbas.edu.tr' || 'altinbas.edu.tr';
-    }
+    } 
   
-    const isValidEmail = /^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value);
     const isSchoolDomain = value.endsWith(`@${validSchoolDomain}`);
-  
+    
     if (!isValidEmail) {
       return ['Please enter a valid email address.'] ;
     }
-  
+    
+    if (!selectedRole) return;
+    
     if (!isSchoolDomain) {
       return  [`Please enter an email address from ${validSchoolDomain}`];
     }

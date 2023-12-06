@@ -1,14 +1,12 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Button, FlatList, TouchableOpacity } from 'react-native';
-import { HeaderButtons, Item } from 'react-navigation-header-buttons';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
-import CustomHeaderButton from '../components/CustomHeaderButton';
 import DataItem from '../components/DataItem';
 import PageContainer from '../components/PageContainer';
 import PageTitle from '../components/PageTitle';
 import colors from '../constants/colors';
 
-const ChatListScreen = props => {
+const CoursesScreen = props => {
 
     const selectedUser = props.route?.params?.selectedUserId;
     const selectedUserList = props.route?.params?.selectedUsers;
@@ -22,19 +20,6 @@ const ChatListScreen = props => {
             return new Date(b.updatedAt) - new Date(a.updatedAt);
         });
     });
-
-    useEffect(() => {
-        props.navigation.setOptions({
-            headerRight: () => {
-                return <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
-                    <Item
-                        title="New chat"
-                        iconName="create-outline"
-                        onPress={() => props.navigation.navigate("NewChat")}/>
-                </HeaderButtons>
-            }
-        })
-    }, []);
 
     useEffect(() => {
 
@@ -61,8 +46,8 @@ const ChatListScreen = props => {
             navigationProps = {
                 newChatData: {
                     users: chatUsers,
-                    isGroupChat: selectedUserList !== undefined,
-                    ...(selectedUserList && { chatName }),
+                    isCourseChat: selectedUserList !== undefined,
+                    chatName
                 }
             }
         }
@@ -75,11 +60,11 @@ const ChatListScreen = props => {
     
     return <PageContainer>
 
-        <PageTitle text="Chats" />
+        <PageTitle text="Courses" />
 
             <View>
                 <TouchableOpacity onPress={() => props.navigation.navigate("NewChat", { isGroupChat: true })}>
-                    <Text style={styles.newGroupText}>New Group</Text>
+                    <Text style={styles.newGroupText}>New Course</Text>
                 </TouchableOpacity>
             </View>
 
@@ -132,4 +117,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default ChatListScreen;
+export default CoursesScreen;

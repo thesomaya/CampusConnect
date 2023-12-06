@@ -6,8 +6,7 @@ import { Feather, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { validateInput } from '../utils/actions/formActions';
 import { reducer } from '../utils/reducers/formReducer';
 import { signUp } from '../utils/actions/authActions';
-import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
-import { Picker } from "@react-native-picker/picker";
+import { ActivityIndicator, Alert } from 'react-native';
 import colors from '../constants/colors';
 import { useDispatch } from 'react-redux';
 

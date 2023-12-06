@@ -32,7 +32,7 @@ const SignInForm = props => {
     const [formState, dispatchFormState] = useReducer(reducer,initialState);
 
     const inputChangedHandler = useCallback((inputId, inputValue) => {
-        const result = validateInput(inputId,inputValue,null);
+        const result = validateInput(inputId,inputValue);
         dispatchFormState({ inputId, validationResult: result, inputValue});
 
     } , [dispatchFormState]) ;

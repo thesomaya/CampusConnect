@@ -2,12 +2,12 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import React, { useEffect, useRef, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Ionicons } from "@expo/vector-icons";
-
+import { Ionicons , FontAwesome5} from "@expo/vector-icons";
 import ChatSettingsScreen from "../screens/ChatSettingsScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import ChatListScreen from "../screens/ChatListScreen";
 import ChatScreen from "../screens/ChatScreen";
+import CoursesScreen from "../screens/CoursesScreen";
 import NewChatScreen from "../screens/NewChatScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useDispatch, useSelector } from "react-redux";
@@ -40,6 +40,15 @@ const TabNavigator = () => {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubble-outline" size={size} color={color} />
           ),
+        }}
+      />
+      <Tab.Screen
+        name="Courses"
+        component={CoursesScreen}
+        options={{
+          tabBarLabel: "Courses",
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="layer-group" size={size} color={color} />          ),
         }}
       />
       <Tab.Screen
