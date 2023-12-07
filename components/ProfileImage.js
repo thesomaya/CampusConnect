@@ -3,6 +3,7 @@ import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } fr
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 
 import userImage from "../assets/images/defaultimage.png";
+import groupImage from "../assets/images/groupchatimage.png";
 import colors from '../constants/colors';
 import { launchImagePicker, uploadImageAsync } from '../utils/imagePickerHelper';
 import { updateSignedInUserData } from '../utils/actions/authActions';
@@ -11,10 +12,8 @@ import { updateLoggedInUserData } from '../store/authSlice';
 import { updateChatData } from '../utils/actions/chatActions';
 
 const ProfileImage = props => {
+
     const dispatch = useDispatch();
-
-    const source = props.uri ?  { uri: props.uri } : userImage;
-
     const [image, setImage] = useState(source);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -23,6 +22,8 @@ const ProfileImage = props => {
 
     const userId = props.userId;
     const chatId = props.chatId;
+   
+    const source = props.uri ?  { uri: props.uri } :  userImage;
 
     const pickImage = async () => {
         try {

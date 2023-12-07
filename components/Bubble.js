@@ -4,11 +4,9 @@ import colors from '../constants/colors';
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
 import uuid from 'react-native-uuid';
 import * as Clipboard from 'expo-clipboard';
-import { Feather, FontAwesome } from '@expo/vector-icons';
-import { starMessage } from '../utils/actions/chatActions';
+import { Feather, FontAwesome, AntDesign, Ionicons } from '@expo/vector-icons';
+import { starMessage, deleteMessage } from '../utils/actions/chatActions';
 import { useSelector } from 'react-redux';
-import { Ionicons } from '@expo/vector-icons';
-
 
 function formatTime(dateString) {
     const date = new Date(dateString);
@@ -137,8 +135,10 @@ const Bubble = props => {
                     <MenuOptions>
                         <MenuItem text='Copy to clipboard' icon={'copy'} onSelect={() => copyToClipboard(text)} />
                         <MenuItem text={ `${isStarred ? "Unstar" : "Star" } message` } icon={ isStarred ? 'star' : 'star-o'} iconPack={FontAwesome} onSelect={() => starMessage(messageId,chatId,userId)} />
-                        <MenuItem text= "Reply" icon="arrow-undo-outline" iconPack={Ionicons}  onSelect={setReply} />
-                        
+                        <MenuItem text= "Reply" icon="arrow-undo-outline" iconPack={Ionicons} onSelect={setReply} />
+                        { type==="myMessage" && (
+                            <MenuItem text= "Delete" icon="delete" iconPack={AntDesign} onSelect={() =>  deleteMessage(chatId, messageId)} />
+                        )}
                     </MenuOptions>
                 </Menu>
 

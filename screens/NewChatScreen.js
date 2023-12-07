@@ -31,8 +31,7 @@ const NewChatScreen = props => {
     const chatId = props.route.params && props.route.params.chatId;
     const existingUsers = props.route.params && props.route.params.existingUsers;
     const isGroupChat = props.route.params && props.route.params.isGroupChat;
-    const isCourseChat = props.route.params && props.route.params.isCourseChat;
-    const isGroupChatDisabled = selectedUsers.length === 0 || (chatName === "");
+    const isGroupChatDisabled = selectedUsers.length === 0 || (isNewChat && chatName === "");
     
     const isNewChat = !chatId;
 
@@ -48,28 +47,17 @@ const NewChatScreen = props => {
             headerRight: () => {
                 return <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
                     {
-                        isGroupChat && !isCourseChat &&
+                        isGroupChat &&
                         <Item
                             title={isNewChat ? "Create" : "Add"}
                             disabled={isGroupChatDisabled}
                             color={isGroupChatDisabled ? colors.lightGrey : undefined}
                             onPress={() => {
-                                const screenName = isNewChat ? "ChatList" : "ChatSettings";
-                                props.navigation.navigate(screenName, {
-                                    selectedUsers,
-                                    chatName,
-                                    chatId
-                                })
-                            }}/>
-                    }
-                    {
-                        isGroupChat && isCourseChat &&
-                        <Item
-                            title={isNewChat ? "Create" : "Add"}
-                            disabled={isGroupChatDisabled}
-                            color={isGroupChatDisabled ? colors.lightGrey : undefined}
-                            onPress={() => {
-                                const screenName = isNewChat ? "Courses" : "ChatSettings";
+                                if (isNewChat) {
+                                    isCourseChat ? "Courses" : "ChatList";
+                                } else {
+                                    screenName = "ChatSettings";
+                                }
                                 props.navigation.navigate(screenName, {
                                     selectedUsers,
                                     chatName,
@@ -138,7 +126,7 @@ const NewChatScreen = props => {
                                 style={styles.textbox}
                                 placeholder="Enter a name for your chat"
                                 autoCorrect={false}
-                                //autoComplete={false}
+                                autoComplete={false}
                                 onChangeText={text => setChatName(text)}
                             />
                         </View>

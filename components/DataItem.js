@@ -1,19 +1,37 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import colors from '../constants/colors';
 import ProfileImage from './ProfileImage';
 import { Ionicons, AntDesign } from '@expo/vector-icons';
+import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
+import uuid from 'react-native-uuid';
 
 const imageSize = 40;
+
+const MenuItem = props => {
+
+    const Icon = props.iconPack ?? Feather; // default to Feather if no iconPack was passed
+
+    return <MenuOption onSelect={props.onSelect}>
+        <View style={styles.menuItemContainer}>
+            <Text style={styles.menuText}>{props.text}</Text>
+            <Icon name={props.icon} size={18} />
+        </View>
+    </MenuOption>
+}
 
 const DataItem = props => {
 
     const { title, subTitle, image, type, isChecked, icon } = props;
 
     const hideImage = props.hideImage && props.hideImage === true;
-
+    const menuRef = useRef(null);
+    const id = useRef(uuid.v4());
     return (
-        <TouchableWithoutFeedback onPress={props.onPress}>
+        <TouchableWithoutFeedback 
+        onPress={props.onPress}
+        onLongPress={() => menuRef.current.props.ctx.menuActions.openMenu(id.current)} style={{ width: '100%' }}
+        >
             <View style={styles.container}>
 
                 {
@@ -66,6 +84,15 @@ const DataItem = props => {
                     </View>
                 }
 
+                <Menu name={id.current} ref={menuRef}>
+                    <MenuTrigger />
+                    <MenuOptions>
+                        <MenuItem text='Delete' icon={'delete'} iconPack={AntDesign} onSelect={() => {}} />
+                    </MenuOptions>
+                </Menu>
+
+                
+
             </View>
         </TouchableWithoutFeedback>
     )
@@ -111,7 +138,18 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         width: imageSize,
         height: imageSize
-    }
+    },
+    menuItemContainer: {
+        flexDirection: 'row',
+        padding: 5,
+        
+    },
+    menuText: {
+        flex: 1,
+        fontFamily: 'regular',
+        letterSpacing: 0.3,
+        fontSize: 16
+    },
 });
 
 export default DataItem;

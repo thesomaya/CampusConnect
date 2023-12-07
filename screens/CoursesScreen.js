@@ -10,7 +10,6 @@ const CoursesScreen = props => {
 
     const selectedUser = props.route?.params?.selectedUserId;
     const selectedUserList = props.route?.params?.selectedUsers;
-    const chatName = props.route?.params?.chatName;
 
     const userData = useSelector(state => state.auth.userData);
     const storedUsers = useSelector(state => state.users.storedUsers);
@@ -20,6 +19,8 @@ const CoursesScreen = props => {
             return new Date(b.updatedAt) - new Date(a.updatedAt);
         });
     });
+    const chatName = props.route?.params?.chatName;
+
     const filteredUserChats = userChats.filter(chat => chat.isCourseChat);
 
     useEffect(() => {

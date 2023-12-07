@@ -116,6 +116,38 @@ export const starMessage = async (messageId, chatId, userId) => {
     }
 }
 
+export const deleteMessage = async (chatId, messageId) => {
+    try {
+        const app = getFirebaseApp();
+        const dbRef = ref(getDatabase(app));
+        const messageRef = child(dbRef, `messages/${chatId}/${messageId}`);
+
+        await remove(messageRef);
+
+        const latestMessageSnapshot = await get(child(dbRef, `messages/${chatId}`), {});
+        const chatRef = child(dbRef, `chats/${chatId}`);
+        
+        if (latestMessageSnapshot.val() !== null) {
+            const latestMessageValues = Object.values(latestMessageSnapshot.val());
+            await update(chatRef, {
+                latestMessageText: latestMessageValues[latestMessageValues.length - 1].text,
+                //updatedAt: new Date().toISOString(),
+            });
+        } else {
+            await update(chatRef, {
+                latestMessageText: '',
+                updatedAt: new Date().toISOString(),
+            });
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error deleting message:', error);
+        return false;
+    }
+};
+
+
 export const removeUserFromChat = async (userLoggedInData, userToRemoveData, chatData) => {
     const userToRemoveId = userToRemoveData.userId;
     const newUsers = chatData.users.filter(uid => uid !== userToRemoveId);

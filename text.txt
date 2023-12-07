@@ -1,13 +1,22 @@
 Features to implement:
 - sign up roles (students, professors, staff) ---- done
-- email verification (altinbas domain)
+- altinbas domain ---- done 
 - deleting messages and chats
-- bloking and reporting feauters
+- sending documents
+- adding voice messages
+- blocking feauter
+- group inviting links
 - admin for group chats
 - group description
-- sending documents
 - announcements section
-- 
+- search by student id
+- update settings page
+- group settings to allow only admin to write messages
+- change default group image
+- deleting account
+
 
 Bug Fixes:
-- when changing email from settings it doesn't check if email is already in use
+sign up roles not showing on android
+
+
