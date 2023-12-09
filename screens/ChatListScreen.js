@@ -75,7 +75,7 @@ const ChatListScreen = props => {
 
         props.navigation.navigate("ChatScreen", navigationProps);
 
-    }, [props.route?.params])
+    }, [props.route?.params, userChats])
     
     return <PageContainer>
 
@@ -116,6 +116,7 @@ const ChatListScreen = props => {
                                 title={title}
                                 subTitle={subTitle}
                                 image={image}
+                                chatId={chatId}
                                 onPress={() => props.navigation.navigate("ChatScreen", { chatId })}
                             />
                 }}

@@ -5,6 +5,7 @@ import ProfileImage from './ProfileImage';
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
 import uuid from 'react-native-uuid';
+import {deletingChat} from '../utils/actions/chatActions';
 
 const imageSize = 40;
 
@@ -22,7 +23,7 @@ const MenuItem = props => {
 
 const DataItem = props => {
 
-    const { title, subTitle, image, type, isChecked, icon } = props;
+    const { title, subTitle, image, type, isChecked, icon, chatId } = props;
 
     const hideImage = props.hideImage && props.hideImage === true;
     const menuRef = useRef(null);
@@ -83,16 +84,14 @@ const DataItem = props => {
                         <Ionicons name="chevron-forward-outline" size={18} color={colors.grey} />
                     </View>
                 }
-
+                
                 <Menu name={id.current} ref={menuRef}>
                     <MenuTrigger />
                     <MenuOptions>
-                        <MenuItem text='Delete' icon={'delete'} iconPack={AntDesign} onSelect={() => {}} />
+                        <MenuItem text='Delete' icon={'delete'} iconPack={AntDesign} onSelect={() => deletingChat(chatId)} />
                     </MenuOptions>
-                </Menu>
-
+                </Menu> 
                 
-
             </View>
         </TouchableWithoutFeedback>
     )

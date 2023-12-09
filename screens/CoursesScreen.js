@@ -100,6 +100,7 @@ const CoursesScreen = props => {
 
                     return <DataItem
                                 title={title}
+                                chatId={chatId}
                                 subTitle={subTitle}
                                 image={image}
                                 onPress={() => props.navigation.navigate("ChatScreen", { chatId })}

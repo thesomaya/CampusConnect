@@ -131,7 +131,6 @@ export const deleteMessage = async (chatId, messageId) => {
             const latestMessageValues = Object.values(latestMessageSnapshot.val());
             await update(chatRef, {
                 latestMessageText: latestMessageValues[latestMessageValues.length - 1].text,
-                //updatedAt: new Date().toISOString(),
             });
         } else {
             await update(chatRef, {
@@ -147,6 +146,35 @@ export const deleteMessage = async (chatId, messageId) => {
     }
 };
 
+export const deletingChat = async (chatId) => {
+    try {
+        const app = getFirebaseApp();
+        const dbRef = ref(getDatabase(app));
+        
+        // Get the chat data to obtain the list of users
+        const chatSnapshot = await get(child(dbRef, `chats/${chatId}`));
+
+        const chatData = chatSnapshot.val();
+        const chatUsers = chatData.users;
+        
+        // Remove the chat from userChats for each user
+        for (const userId of chatUsers) {
+            await deleteUserChat(userId, chatId);
+        }
+        // Delete all messages in the chat
+        const messagesRef = child(dbRef, `messages/${chatId}`);
+        await remove(messagesRef);
+
+        // Remove the chat reference 
+        const chatRef = child(dbRef, `chats/${chatId}`);
+        await update (chatRef, {users:  [] })
+        await remove(chatRef);
+        return true;
+    } catch (error) {
+        console.error('Error deleting chat:', error);
+        return false;
+    }
+};
 
 export const removeUserFromChat = async (userLoggedInData, userToRemoveData, chatData) => {
     const userToRemoveId = userToRemoveData.userId;

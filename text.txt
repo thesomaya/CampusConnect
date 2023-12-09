@@ -2,6 +2,8 @@ Features to implement:
 - sign up roles (students, professors, staff) ---- done
 - altinbas domain ---- done 
 - deleting messages and chats
+- deleting otherUser message onlyforMe
+- deleting otherUser message by admin in group
 - sending documents
 - adding voice messages
 - blocking feauter
@@ -14,9 +16,11 @@ Features to implement:
 - group settings to allow only admin to write messages
 - change default group image
 - deleting account
-
+- dark theme 
 
 Bug Fixes:
 sign up roles not showing on android
+notifications are sent to all accounts - probably ? 
+
 
 

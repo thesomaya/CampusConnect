@@ -31,6 +31,7 @@ const NewChatScreen = props => {
     const chatId = props.route.params && props.route.params.chatId;
     const existingUsers = props.route.params && props.route.params.existingUsers;
     const isGroupChat = props.route.params && props.route.params.isGroupChat;
+    const isCourseChat = props.route.params && props.route.params.isCourseChat;
     const isGroupChatDisabled = selectedUsers.length === 0 || (isNewChat && chatName === "");
     
     const isNewChat = !chatId;
@@ -54,7 +55,7 @@ const NewChatScreen = props => {
                             color={isGroupChatDisabled ? colors.lightGrey : undefined}
                             onPress={() => {
                                 if (isNewChat) {
-                                    isCourseChat ? "Courses" : "ChatList";
+                                    screenName = isCourseChat ? "Courses" : "ChatList";
                                 } else {
                                     screenName = "ChatSettings";
                                 }
