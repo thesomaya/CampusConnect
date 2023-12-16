@@ -9,7 +9,7 @@ import ChatListScreen from "../screens/ChatListScreen";
 import ChatScreen from "../screens/ChatScreen";
 import CoursesScreen from "../screens/CoursesScreen";
 import NewChatScreen from "../screens/NewChatScreen";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createStackNavigator } from "@react-navigation/stack";
 import { useDispatch, useSelector } from "react-redux";
 import { getFirebaseApp } from "../utils/firebaseHelper";
 import { child, get, getDatabase, off, onValue, ref } from "firebase/database";
@@ -22,8 +22,9 @@ import { setChatMessages, setStarredMessages } from "../store/messagesSlice";
 import ContactScreen from "../screens/ContactScreen";
 import DataListScreen from "../screens/DataListScreen";
 import { StackActions, useNavigation } from '@react-navigation/native';
+import { NavigationContainer } from "@react-navigation/native";
 
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => {
@@ -130,7 +131,6 @@ const MainNavigator = (props) => {
   const storedUsers = useSelector(state => state.users.storedUsers);
 
   const [expoPushToken, setExpoPushToken] = useState('');
-  // console.log(expoPushToken)
   const notificationListener = useRef();
   const responseListener = useRef();
 
@@ -285,7 +285,7 @@ async function registerForPushNotificationsAsync() {
       alert('Failed to get push token for push notification!');
       return;
     }
-    token = (await Notifications.getExpoPushTokenAsync()).data;
+    token = (await Notifications.getExpoPushTokenAsync({ projectId: '22a6cc2b-b04f-4656-b898-928227ed5f87' })).data;
   } else {
     console.log('Must use physical device for Push Notifications');
   }

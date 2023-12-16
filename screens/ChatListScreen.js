@@ -75,7 +75,7 @@ const ChatListScreen = props => {
 
         props.navigation.navigate("ChatScreen", navigationProps);
 
-    }, [props.route?.params, userChats])
+    }, [props.route?.params])
     
     return <PageContainer>
 

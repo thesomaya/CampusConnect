@@ -112,7 +112,8 @@ export const starMessage = async (messageId, chatId, userId) => {
             await set(childRef, starredMessageData);
         }
     } catch (error) {
-        console.log(error);        
+        console.log(error);   
+        
     }
 }
 

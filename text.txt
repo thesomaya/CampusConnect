@@ -1,7 +1,7 @@
 Features to implement:
 - sign up roles (students, professors, staff) ---- done
 - altinbas domain ---- done 
-- deleting messages and chats
+- deleting messages and chats ---- done 
 - deleting otherUser message onlyforMe
 - deleting otherUser message by admin in group
 - sending documents

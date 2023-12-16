@@ -9,7 +9,7 @@ import { useDispatch } from 'react-redux';
 import { signIn } from '../utils/actions/authActions';
 import colors from '../constants/colors.js';
 
-const isTestMode = true;
+const isTestMode = false;
 
 const initialState = {
     inputValues: {     

@@ -1,9 +1,8 @@
 import React, { useState } from  'react';
 import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import { FontAwesome } from '@expo/vector-icons';
 
-import userImage from "../assets/images/defaultimage.png";
-import groupImage from "../assets/images/groupchatimage.png";
+import userImage from '../assets/images/defaultimage.png';
 import colors from '../constants/colors';
 import { launchImagePicker, uploadImageAsync } from '../utils/imagePickerHelper';
 import { updateSignedInUserData } from '../utils/actions/authActions';
@@ -12,8 +11,10 @@ import { updateLoggedInUserData } from '../store/authSlice';
 import { updateChatData } from '../utils/actions/chatActions';
 
 const ProfileImage = props => {
-
     const dispatch = useDispatch();
+
+    const source = props.uri ?  { uri: props.uri } : userImage;
+
     const [image, setImage] = useState(source);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -22,8 +23,6 @@ const ProfileImage = props => {
 
     const userId = props.userId;
     const chatId = props.chatId;
-   
-    const source = props.uri ?  { uri: props.uri } :  userImage;
 
     const pickImage = async () => {
         try {
@@ -41,17 +40,22 @@ const ProfileImage = props => {
             }
 
             if (chatId) {
-              await updateChatData(chatId, userId, { chatImage: uploadUrl })
-            } else {
-              const newData = { profilePicture: uploadUrl };
-              await updateSignedInUserData(userId, newData);
-              dispatch(updateLoggedInUserData({ newData }));
-            } 
+                await updateChatData(chatId, userId, { chatImage: uploadUrl })
+            }
+            else {
+                const newData = { profilePicture: uploadUrl };
+
+                await updateSignedInUserData(userId, newData);
+                dispatch(updateLoggedInUserData({ newData }));
+            }
+
+            
 
             setImage({ uri: uploadUrl });
         }
         catch (error) {
             console.log(error);
+
             setIsLoading(false);
         }
     }
@@ -72,18 +76,17 @@ const ProfileImage = props => {
             }
 
             {
-              showEditButton && !isLoading && 
-              <View style={styles.editIconContainer}>
-                <FontAwesome name="pencil" size={15} color="black" />
-              </View>
-          
+                showEditButton && !isLoading &&
+                <View style={styles.editIconContainer}>
+                    <FontAwesome name="pencil" size={15} color="black" />
+                </View>
             }
-
+            
             {
-              showRemoveButton && !isLoading && 
-              <View style={styles.removeIconContainer}>
-                <Ionicons name="close" size={15} color="white" />        
-              </View>      
+                showRemoveButton && !isLoading &&
+                <View style={styles.removeIconContainer}>
+                    <FontAwesome name="close" size={15} color="black" />
+                </View>
             }
 
         </Container>
@@ -91,32 +94,31 @@ const ProfileImage = props => {
 };
 
 const styles = StyleSheet.create({
-  image: {
-    borderRadius: 50,
-    borderColor: colors.grey,
-    borderWidth: 1,
-  },
-  editIconContainer: {
-    position: "absolute",
-    bottom: 0,
-    right: -12,
-    backgroundColor: colors.lightGrey,
-    borderRadius: 20,
-    padding: 8,
-  },
-  removeIconContainer: {
-    position: "absolute",
-    bottom: -3,
-    right: -3,    
-    backgroundColor: colors.grey,
-    borderRadius: 20,
-    padding: 3,
-  },
-  loadingContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-  }
-});
+    image: {
+        borderRadius: 50,
+        borderColor: colors.grey,
+        borderWidth: 1
+    },
+    editIconContainer: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        backgroundColor: colors.lightGrey,
+        borderRadius: 20,
+        padding: 8
+    },
+    removeIconContainer: {
+        position: 'absolute',
+        bottom: -3,
+        right: -3,
+        backgroundColor: colors.lightGrey,
+        borderRadius: 20,
+        padding: 3
+    },
+    loadingContainer: {
+        justifyContent: 'center',
+        alignItems: 'center'
+    }
+})
 
 export default ProfileImage;
-

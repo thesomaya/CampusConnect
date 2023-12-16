@@ -13,6 +13,16 @@ import { MenuProvider } from "react-native-popup-menu";
 //AsyncStorage.clear(); // force logging out
 SplashScreen.preventAutoHideAsync();
 LogBox.ignoreLogs(['Selector unknown returned a different result when called with the same parameters']);
+//console.warn = () => {}; // Silences all warnings
+
+const originalConsoleWarn = console.warn;
+console.warn = (...args) => {
+  if (args.some(arg => typeof arg === 'string' && arg.startsWith('Selector unknown returned a different result when called with the same parameters'))) {
+    return;
+  }
+  originalConsoleWarn.apply(console, args); // If the warning does not match the specific sentence, pass it through
+};
+
 
 export default function App() {
 
@@ -38,7 +48,7 @@ export default function App() {
         });
       }
       catch (error) {
-        console.log.error();
+        console.log(error);
       }
       finally {
         setAppIsLoaded(true);

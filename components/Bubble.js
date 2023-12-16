@@ -88,6 +88,8 @@ const Bubble = props => {
             await Clipboard.setStringAsync(text);
         } catch (error) {
             console.log(error);
+            console.log(error.message);
+            console.log(error.stack);
         }
     }
     const isStarred = isUserMessage && starredMessages[messageId] !== undefined;

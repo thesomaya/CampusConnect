@@ -1,21 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Button,
-  ImageBackground,
-  TextInput,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  FlatList,
-  Image,
-  ActivityIndicator,
-} from "react-native";
+import {View,Text,StyleSheet,ImageBackground,TextInput,TouchableOpacity,FlatList,Image,ActivityIndicator} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-
 import backgroundImage from "../assets/images/chatbackground.png";
 import colors from "../constants/colors";
 import { useSelector } from "react-redux";
@@ -42,6 +28,7 @@ const ChatScreen = (props) => {
   const userData = useSelector(state => state.auth.userData);
   const storedUsers = useSelector(state => state.users.storedUsers);
   const storedChats = useSelector(state => state.chats.chatsData);
+
   const chatMessages = useSelector(state => {
     if (!chatId) return [];
 
@@ -109,6 +96,8 @@ const ChatScreen = (props) => {
       setReplyingTo(null);
     } catch (error) {
       console.log(error);
+      console.log(error.message);
+      console.log(error.stack);
       setErrorBannerText("Message failed to send");
       setTimeout(() => setErrorBannerText(""), 5000);
     }
@@ -123,6 +112,8 @@ const ChatScreen = (props) => {
       setTempImageUri(tempUri);
     } catch (error) {
       console.log(error);
+      console.log(error.message);
+      console.log(error.stack);
     }
   }, [tempImageUri]);
 
@@ -134,6 +125,8 @@ const ChatScreen = (props) => {
       setTempImageUri(tempUri);
     } catch (error) {
       console.log(error);
+      console.log(error.message);
+      console.log(error.stack);
     }
   }, [tempImageUri]);
 
@@ -159,6 +152,8 @@ const ChatScreen = (props) => {
       
     } catch (error) {
       console.log(error);
+      console.log(error.message);
+      console.log(error.stack);
       
     }
   }, [isLoading, tempImageUri, chatId])
