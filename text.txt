@@ -1,26 +1,28 @@
 Features to implement:
-- sign up roles (students, professors, staff) ---- done
-- altinbas domain ---- done 
-- deleting messages and chats ---- done 
-- deleting otherUser message onlyforMe
+- admin for group 
 - deleting otherUser message by admin in group
-- sending documents
+- sending videos
+- download feature for photos videos documents 
+- forward messages feature 
+- sending location
+- creating a poll in chats 
+- sending contacts
 - adding voice messages
-- blocking feauter
-- group inviting links
-- admin for group chats
+- blocking users
 - group description
-- announcements section
+- announcements section in the timeline screen which includes reactions and comments for posts 
 - search by student id
 - update settings page
 - group settings to allow only admin to write messages
 - change default group image
 - deleting account
 - dark theme 
+- email verification using outlook, sms verification
+- updating settings page to add different privacy options (lastseen and online, notifications, theme, storage prefrences) 
 
 Bug Fixes:
+page not rendering when deleting a chat  
 sign up roles not showing on android
-notifications are sent to all accounts - probably ? 
 
 
 

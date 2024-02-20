@@ -2,6 +2,8 @@ import { child, get, getDatabase, push, ref, remove, set, update } from "firebas
 import { getFirebaseApp } from "../firebaseHelper";
 import { getUserPushTokens } from "./authActions";
 import { addUserChat, deleteUserChat, getUserChats } from "./userActions";
+import uuid from 'react-native-uuid';
+
 
 export const createChat = async (loggedInUserId, chatData) => {
 
@@ -10,7 +12,8 @@ export const createChat = async (loggedInUserId, chatData) => {
         createdBy: loggedInUserId,
         updatedBy: loggedInUserId,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        invitationCode: generateInvitationLink()
     };
 
     const app = getFirebaseApp();
@@ -21,28 +24,39 @@ export const createChat = async (loggedInUserId, chatData) => {
     for (let i = 0; i < chatUsers.length; i++) {
         const userId = chatUsers[i];
         await push(child(dbRef, `userChats/${userId}`), newChat.key);
+        
     }
 
     return newChat.key;
 }
 
 export const sendTextMessage = async (chatId, senderData, messageText, replyTo, chatUsers) => {
-    await sendMessage(chatId, senderData.userId, messageText, null, replyTo, null);
+    await sendMessage(chatId, senderData.userId, messageText, null, null, replyTo, null);
 
     const otherUsers = chatUsers.filter(uid => uid !== senderData.userId);
     await sendPushNotificationForUsers(otherUsers, `${senderData.firstName} ${senderData.lastName}`, messageText, chatId);
 }
 
 export const sendInfoMessage = async (chatId, senderId, messageText) => {
-    await sendMessage(chatId, senderId, messageText, null, null, "info");
+    await sendMessage(chatId, senderId, messageText, null, null, null, "info");
 }
 
 export const sendImage = async (chatId, senderData, imageUrl, replyTo, chatUsers) => {
-    await sendMessage(chatId, senderData.userId, 'Image', imageUrl, replyTo, null);
+    await sendMessage(chatId, senderData.userId, 'Image', imageUrl, null, replyTo, null);
 
     const otherUsers = chatUsers.filter(uid => uid !== senderData.userId);
     await sendPushNotificationForUsers(otherUsers, `${senderData.firstName} ${senderData.lastName}`, `${senderData.firstName} sent an image`, chatId);
 }
+
+export const sendDocument = async (chatId, senderData, documentUrl, replyTo, chatUsers, documentName) => {
+    console.log(documentName);
+    console.log(documentUrl);
+    await sendMessage(chatId, senderData.userId, documentName, null, documentUrl, replyTo, null);
+
+    const otherUsers = chatUsers.filter(uid => uid !== senderData.userId);
+    await sendPushNotificationForUsers(otherUsers, `${senderData.firstName} ${senderData.lastName}`, `${senderData.firstName} sent a document`, chatId);
+}
+
 
 export const updateChatData = async (chatId, userId, chatData) => {
     const app = getFirebaseApp();
@@ -56,23 +70,25 @@ export const updateChatData = async (chatId, userId, chatData) => {
     })
 }
 
-const sendMessage = async (chatId, senderId, messageText, imageUrl, replyTo, type) => {
+const sendMessage = async (chatId, senderId, messageText, imageUrl, documentUrl, replyTo, type) => {
     const app = getFirebaseApp();
     const dbRef = ref(getDatabase());
     const messagesRef = child(dbRef, `messages/${chatId}`);
-
     const messageData = {
         sentBy: senderId,
         sentAt: new Date().toISOString(),
         text: messageText
     };
-
     if (replyTo) {
         messageData.replyTo = replyTo;
     }
 
     if (imageUrl) {
         messageData.imageUrl = imageUrl;
+    }
+
+    if (documentUrl) {
+        messageData.documentUrl = documentUrl;
     }
 
     if (type) {
@@ -151,24 +167,23 @@ export const deletingChat = async (chatId) => {
     try {
         const app = getFirebaseApp();
         const dbRef = ref(getDatabase(app));
-        
+
         // Get the chat data to obtain the list of users
         const chatSnapshot = await get(child(dbRef, `chats/${chatId}`));
 
         const chatData = chatSnapshot.val();
         const chatUsers = chatData.users;
-        
-        // Remove the chat from userChats for each user
-        for (const userId of chatUsers) {
-            await deleteUserChat(userId, chatId);
-        }
         // Delete all messages in the chat
         const messagesRef = child(dbRef, `messages/${chatId}`);
         await remove(messagesRef);
 
+        // Remove the chat from userChats for each user
+        for (const userId of chatUsers) {
+            await deleteUserChat(userId, chatId);
+        }
+
         // Remove the chat reference 
         const chatRef = child(dbRef, `chats/${chatId}`);
-        await update (chatRef, {users:  [] })
         await remove(chatRef);
         return true;
     } catch (error) {
@@ -215,7 +230,7 @@ export const addUsersToChat = async (userLoggedInData, usersToAddData, chatData)
 
         await addUserChat(userToAddId, chatData.key);
 
-        userAddedName = `${userToAdd.firstName} ${userToAdd.lastName}`;
+        userAddedName = `${userToAdd.firstName}`;
     });
 
     if (newUsers.length === 0) {
@@ -225,7 +240,7 @@ export const addUsersToChat = async (userLoggedInData, usersToAddData, chatData)
     await updateChatData(chatData.key, userLoggedInData.userId, { users: existingUsers.concat(newUsers) })
 
     const moreUsersMessage = newUsers.length > 1 ? `and ${newUsers.length - 1} others ` : '';
-    const messageText = `${userLoggedInData.firstName} ${userLoggedInData.lastName} added ${userAddedName} ${moreUsersMessage}to the chat`;
+    const messageText = `${userLoggedInData.firstName} added ${userAddedName} ${moreUsersMessage}to the chat`;
     await sendInfoMessage(chatData.key, userLoggedInData.userId, messageText);
 
 }
@@ -252,3 +267,9 @@ const sendPushNotificationForUsers = (chatUsers, title, body, chatId) => {
         }
     })
 }
+
+export const generateInvitationLink = () => {
+    const invitationCode = uuid.v4();
+    return invitationCode;
+}
+

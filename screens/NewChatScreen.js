@@ -42,7 +42,8 @@ const NewChatScreen = props => {
                 return <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
                     <Item
                         title="Close"
-                        onPress={() => props.navigation.goBack()}/>
+                        onPress={() => props.navigation.goBack()}
+                        style={styles.closeButton}/>
                 </HeaderButtons>
             },
             headerRight: () => {
@@ -284,6 +285,9 @@ const styles = StyleSheet.create({
     selectedUserStyle: {
         marginRight: 10,
         marginBottom: 10
+    },
+    closeButton: {
+        marginLeft: 20,
     }
 })
 

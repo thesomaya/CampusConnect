@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Button, FlatList, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import { useSelector } from 'react-redux';
 import CustomHeaderButton from '../components/CustomHeaderButton';
@@ -7,23 +7,38 @@ import DataItem from '../components/DataItem';
 import PageContainer from '../components/PageContainer';
 import PageTitle from '../components/PageTitle';
 import colors from '../constants/colors';
+import { setChatsData } from '../store/chatSlice'; 
 
 const ChatListScreen = props => {
 
     const selectedUser = props.route?.params?.selectedUserId;
     const selectedUserList = props.route?.params?.selectedUsers;
-
     const userData = useSelector(state => state.auth.userData);
     const storedUsers = useSelector(state => state.users.storedUsers);
-    const userChats = useSelector(state => {
+    /*const userChats = useSelector(state => {
         const chatsData = state.chats.chatsData;
         return Object.values(chatsData).sort((a, b) => {
             return new Date(b.updatedAt) - new Date(a.updatedAt);
         });
+    });*/
+    //const [chatsData, setChatsData] = useState([]);
+    const chatsData = useSelector(state => state.chats.chatsData);  
+    const userChats = Object.values(chatsData).sort((a, b) => {
+        return new Date(b.updatedAt) - new Date(a.updatedAt);
     });
+    const filteredUserChats = userChats.filter(chat => !chat.isCourseChat);
+
     const chatName = props.route?.params?.chatName;
 
-    const filteredUserChats = userChats.filter(chat => !chat.isCourseChat);
+    console.log("selectedUser:" , selectedUser);
+    console.log("selectedUserList:" , selectedUserList);
+    console.log("userData:" , userData);
+    console.log("storedUsers:" , storedUsers);
+    console.log("chatsData:" , chatsData);
+    console.log("userChats:" , userChats);
+    console.log("filteredUserChats:" , filteredUserChats);
+    console.log("chatName:" , chatName);
+    console.log("-----------------------------------------------");
 
 
     useEffect(() => {
@@ -38,13 +53,11 @@ const ChatListScreen = props => {
             }
         })
     }, []);
-
     useEffect(() => {
 
         if (!selectedUser && !selectedUserList) {
             return;
         }
-
         let chatData;
         let navigationProps;
 

@@ -11,6 +11,7 @@ import colors from '../constants/colors';
 import { addUsersToChat, removeUserFromChat, updateChatData } from '../utils/actions/chatActions';
 import { validateInput } from '../utils/actions/formActions';
 import { reducer } from '../utils/reducers/formReducer';
+import * as Clipboard from 'expo-clipboard';
 
 const ChatSettingsScreen = props => {
 
@@ -58,6 +59,18 @@ const ChatSettingsScreen = props => {
         dispatchFormState({ inputId, validationResult: result, inputValue })
     }, [dispatchFormState]);
 
+    const shareInvitationLink = () => {
+        return `https://campusconnect.com/join-chat/${chatData.invitationCode}`;
+    }
+    const invitationLink = shareInvitationLink();
+
+    const copyToClipboard = async text => {
+        try {
+            await Clipboard.setStringAsync(text);
+        } catch (error) {
+            console.log(error);
+        }
+    }
     const saveHandler = useCallback(async () => {
         const updatedValues = formState.inputValues;
         
@@ -69,7 +82,7 @@ const ChatSettingsScreen = props => {
 
             setTimeout(() => {
                 setShowSuccessMessage(false)
-            }, 1500);
+            }, 1500)
         } catch (error) {
             console.log(error);
         }
@@ -133,6 +146,11 @@ const ChatSettingsScreen = props => {
                     disabled={!formState.formIsValid}
                 />
             }
+
+            <View style={styles.sectionContainer}>
+                <Text style={styles.heading}>Inviting Link</Text>
+                <Text style={styles.link} onPress={() => copyToClipboard(invitationLink)}>{shareInvitationLink()}</Text>
+            </View>
 
             <View style={styles.sectionContainer}>
                 <Text style={styles.heading}>{chatData.users.length} Participants</Text>
@@ -208,7 +226,14 @@ const styles = StyleSheet.create({
         color: colors.textColor,
         fontFamily: 'bold',
         letterSpacing: 0.3
-    }
+    },
+    link: {
+        color: colors.blue,
+        fontFamily: 'regular',
+        letterSpacing: 0.3,
+        textDecorationLine: "underline",
+        
+    },
 })
 
 export default ChatSettingsScreen;

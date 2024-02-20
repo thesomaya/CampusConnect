@@ -49,8 +49,8 @@ export const validateStudentNumber = (id, value, selectedRole) => {
     if (value !== "") {
       constraints.numericality = {
         onlyInteger: true,
-        greaterThan: 200000000,
-        lessThanOrEqualTo: 300000000,
+        greaterThan: 100000000,
+        lessThanOrEqualTo: 500000000,
         message: "is not valid.",
       };
     }

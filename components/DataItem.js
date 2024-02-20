@@ -7,6 +7,7 @@ import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-m
 import uuid from 'react-native-uuid';
 import {deletingChat} from '../utils/actions/chatActions';
 
+
 const imageSize = 40;
 
 const MenuItem = props => {
@@ -22,16 +23,16 @@ const MenuItem = props => {
 }
 
 const DataItem = props => {
-
     const { title, subTitle, image, type, isChecked, icon, chatId } = props;
-
     const hideImage = props.hideImage && props.hideImage === true;
     const menuRef = useRef(null);
     const id = useRef(uuid.v4());
+
     return (
         <TouchableWithoutFeedback 
         onPress={props.onPress}
-        onLongPress={() => menuRef.current.props.ctx.menuActions.openMenu(id.current)} style={{ width: '100%' }}
+        onLongPress={() => (props.type !== "checkbox" && menuRef.current.props.ctx.menuActions.openMenu(id.current))}
+        style={{ width: '100%' }}        
         >
             <View style={styles.container}>
 
@@ -85,13 +86,15 @@ const DataItem = props => {
                     </View>
                 }
                 
+                {
+                type !== "checkbox" &&
                 <Menu name={id.current} ref={menuRef}>
                     <MenuTrigger />
                     <MenuOptions>
                         <MenuItem text='Delete' icon={'delete'} iconPack={AntDesign} onSelect={() => deletingChat(chatId)} />
                     </MenuOptions>
                 </Menu> 
-                
+                }
             </View>
         </TouchableWithoutFeedback>
     )

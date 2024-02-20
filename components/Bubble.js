@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Image, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import colors from '../constants/colors';
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
 import uuid from 'react-native-uuid';
@@ -7,6 +7,8 @@ import * as Clipboard from 'expo-clipboard';
 import { Feather, FontAwesome, AntDesign, Ionicons } from '@expo/vector-icons';
 import { starMessage, deleteMessage } from '../utils/actions/chatActions';
 import { useSelector } from 'react-redux';
+import { Linking } from 'react-native';
+import { openPDF, openWord, openPowerPoint } from '../utils/openFiles';
 
 function formatTime(dateString) {
     const date = new Date(dateString);
@@ -32,7 +34,7 @@ const MenuItem = props => {
 }
 
 const Bubble = props => {
-    const { text, type, messageId, chatId, userId , date, setReply, replyingTo, name, imageUrl} = props;
+    const { text, type, messageId, chatId, userId , date, setReply, replyingTo, name, imageUrl, documentUrl} = props;
     const starredMessages = useSelector(state => state.messages.starredMessages[chatId] ?? {} );
     const storedUsers =  useSelector(state => state.users.storedUsers);
     const bubbleStyle = { ...styles.container };
@@ -45,7 +47,6 @@ const Bubble = props => {
     let Container = View;
     let isUserMessage = false;
     const dateString = date && formatTime(date);
-
     switch (type) {
         case "system":
             textStyle.color = '#65644A';
@@ -88,10 +89,53 @@ const Bubble = props => {
             await Clipboard.setStringAsync(text);
         } catch (error) {
             console.log(error);
-            console.log(error.message);
-            console.log(error.stack);
         }
     }
+
+    const handleOpenDocument = async documentURL => {
+        try {
+          // Check the document type and open accordingly
+          if (text.endsWith('.pdf')) {
+            // Use PDF viewer
+            await openPDF(documentURL);
+          } else if (text.endsWith('.docx') || documentURL.endsWith('.doc')) {
+            // Use Word viewer
+            await openWord(documentURL);
+          } else if (text.endsWith('.pptx') || documentURL.endsWith('.ppt')) {
+            // Use PowerPoint viewer
+            await openPowerPoint(documentURL);
+          } else {
+            // Use default viewer for other document types
+            await Linking.openURL(documentURL);
+          }
+        } catch (error) {
+          console.log('Error opening document:', error);
+        }
+      };
+
+    const isLink = text.startsWith("http") || text.startsWith("https") || text.startsWith("exp");
+    
+    const handleOpenURL = async (url) => {
+        // Check if the URL can be opened by your app
+        const supported = await Linking.canOpenURL(url);
+        /*
+        if (supported) {
+          // Handle deep link within your app
+          if (url.startsWith('exp')) {
+            // Extract path from URL (remove scheme and prefix)
+            const path = url.replace('exp', '');
+            // Navigate to the specified screen based on path
+            // (Your navigation logic here)
+          } else {
+            // Open the URL in the default browser
+            await Linking.openURL(url);
+          }
+        } else {
+          // Show an error message or fallback behavior
+          alert(`Cannot open this URL: ${url}`);
+        }*/
+      };
+      
     const isStarred = isUserMessage && starredMessages[messageId] !== undefined;
     const replyingToUser = replyingTo && storedUsers[replyingTo.sentBy];
     return (
@@ -112,9 +156,16 @@ const Bubble = props => {
                             name={`${replyingToUser.firstLast}`}
                         />
                     }
+                    
                     {
-                        !imageUrl &&
+                        !documentUrl && !imageUrl && !isLink &&
                         <Text style={textStyle}>
+                            {text}
+                        </Text>
+                    }
+                    {
+                        !documentUrl && !imageUrl && isLink &&
+                        <Text style={styles.link} onPress={() => handleOpenURL(text)} >
                             {text}
                         </Text>
                     }
@@ -123,13 +174,26 @@ const Bubble = props => {
                         imageUrl && 
                         <Image source={{ uri: imageUrl }} style={styles.image} />
                     }
+                    { !imageUrl && documentUrl && 
+                        <TouchableOpacity onPress={() => handleOpenDocument(documentUrl)}>
+                        <View style={styles.documentContainer}>
+                            <Ionicons name="document-outline" size={40} color={colors.blue} style={styles.documentIcon} />
+                            <View style={styles.documentInfo}>
+                            <Text style={styles.text}>{text}</Text>
+                            </View>
+                        </View>
+                        </TouchableOpacity>
+                    }
+                    
                 
-                {
-                    dateString && type !== "info" && <View style={styles.timeContainer}>
-                        { isStarred && <FontAwesome name="star" size={11} color= {colors.grey} style={ { marginRight: 2, marginTop: 2} }/> }
-                        <Text style={styles.time} > {dateString} </Text>
+                { dateString && type !== "info" && 
+                    <View style={styles.timeContainer}>
+                        {isStarred && <FontAwesome name="star" size={11} color={colors.grey} style={{ marginRight: 2, marginTop: 2 }} />}
+                        <Text style={styles.time}> {dateString} </Text>
                     </View>
                 }
+
+
 
                 <Menu name={id.current} ref={menuRef}>
                     <MenuTrigger />
@@ -200,7 +264,23 @@ const styles = StyleSheet.create({
         width: 300,
         height: 300,
         marginBottom: 5,
-    }
+    },
+    link: {
+        color: colors.blue,
+        fontFamily: 'regular',
+        letterSpacing: 0.3,
+        textDecorationLine: "underline",
+        
+    },
+    documentContainer: {
+        alignItems: 'center',
+    },
+    documentIcon: {
+        marginRight: 10,
+    },
+    documentInfo: {
+        flex: 1,
+    },
 })
 
 export default Bubble;

@@ -12,10 +12,11 @@ const AppNavigator = (props) => {
   const didTryAutoLogin =  useSelector(state => state.auth.didTryAutoLogin);
 
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={{ prefixes: ['exp://'] }}>
       {isAuth && <MainNavigator />}
       {!isAuth && didTryAutoLogin && <AuthScreen />}
       {!isAuth && !didTryAutoLogin && <StartUpScreen />}
+      
     </NavigationContainer>
   );
 };

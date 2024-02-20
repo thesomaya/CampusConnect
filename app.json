@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "CampusConnect",
-    "slug": "campusconnect",
+    "scheme": "campusconnect",
+    "slug": "campus-connect",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -41,7 +42,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "22a6cc2b-b04f-4656-b898-928227ed5f87"
+        "projectId": "da67a7c4-0e66-45f1-b97e-f8d5d8f340c4"
       }
     },
     "owner": "somaia.mohamed"

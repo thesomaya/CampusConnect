@@ -1,18 +1,20 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import {View,Text,StyleSheet,ImageBackground,TextInput,TouchableOpacity,FlatList,Image,ActivityIndicator} from "react-native";
+import {View,StyleSheet,ImageBackground,TextInput,TouchableOpacity,FlatList,Image,ActivityIndicator} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import backgroundImage from "../assets/images/chatbackground.png";
 import colors from "../constants/colors";
+import ActionSheet from 'react-native-action-sheet';
 import { useSelector } from "react-redux";
 import PageContainer from "../components/PageContainer";
 import Bubble from "../components/Bubble";
-import { createChat, sendImage, sendTextMessage } from "../utils/actions/chatActions";
+import { createChat, sendImage, sendDocument, sendTextMessage } from "../utils/actions/chatActions";
 import ReplyTo from "../components/ReplyTo";
 import { launchImagePicker, openCamera, uploadImageAsync } from "../utils/imagePickerHelper";
 import AwesomeAlert from 'react-native-awesome-alerts';
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
 import CustomHeaderButton from "../components/CustomHeaderButton";
+import { launchDocumentPicker, uploadDocumentAsync } from '../utils/launchDocumentPicker'; 
 
 const ChatScreen = (props) => {
   const [chatUsers, setChatUsers] = useState([]);
@@ -21,13 +23,51 @@ const ChatScreen = (props) => {
   const [errorBannerText, setErrorBannerText] = useState("");
   const [replyingTo, setReplyingTo] = useState();
   const [tempImageUri, setTempImageUri] = useState("");
+  const [tempDocUri, setTempDocUri] = useState("");
+  const [tempDocName, setTempDocName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const options = ['Cancel', 'Photos', 'Document', 'Contact', 'Location', 'Poll'];
+  const cancelButtonIndex = 0;
 
   const flatList = useRef();
 
   const userData = useSelector(state => state.auth.userData);
   const storedUsers = useSelector(state => state.users.storedUsers);
   const storedChats = useSelector(state => state.chats.chatsData);
+  const showActionSheet = () => {
+      ActionSheet.showActionSheetWithOptions(
+        {
+          options,
+          cancelButtonIndex,
+        },
+        (buttonIndex) => {
+          handleActionSheetPress(buttonIndex);
+        }
+      );
+    };
+
+    const handleActionSheetPress = (buttonIndex) => {
+      switch (buttonIndex) {
+        case 1:
+          pickImage();
+          break;
+        case 2:
+          pickDocument();
+          break;
+        case 3:
+          // Contact
+          break;
+        case 4:
+          // Location
+          break;
+        case 5:
+          // Poll
+          break;
+        default:
+          // Cancel
+          break;
+      }
+    };
 
   const chatMessages = useSelector(state => {
     if (!chatId) return [];
@@ -103,6 +143,18 @@ const ChatScreen = (props) => {
     }
   }, [messageText, chatId]);
 
+  const takePhoto = useCallback(async () => {
+    try {
+      const tempUri = await openCamera();
+      if (!tempUri) return;
+
+      setTempImageUri(tempUri);
+    } catch (error) {
+      console.log(error);
+      console.log(error.message);
+      console.log(error.stack);
+    }
+  }, [tempImageUri]);
 
   const pickImage = useCallback(async () => {
     try {
@@ -117,18 +169,22 @@ const ChatScreen = (props) => {
     }
   }, [tempImageUri]);
 
-  const takePhoto = useCallback(async () => {
+  const pickDocument = useCallback(async () => {
     try {
-      const tempUri = await openCamera();
-      if (!tempUri) return;
+      const documentInfo = await launchDocumentPicker();
+      if (!documentInfo) return;
+  
+      const { name, uri } = documentInfo;
+      
+      setTempDocUri(uri);
+      setTempDocName(name);
 
-      setTempImageUri(tempUri);
     } catch (error) {
       console.log(error);
       console.log(error.message);
       console.log(error.stack);
     }
-  }, [tempImageUri]);
+  }, [tempDocUri, tempDocName]);
 
   const uploadImage = useCallback(async () => {
     setIsLoading(true);
@@ -147,8 +203,7 @@ const ChatScreen = (props) => {
 
       await sendImage(id, userData, uploadUrl, replyingTo && replyingTo.key, chatUsers)
       setReplyingTo(null);
-      
-      setTimeout(() => setTempImageUri(""), 500);
+      setTimeout(() => setTempImageUri(""), 100);
       
     } catch (error) {
       console.log(error);
@@ -157,6 +212,33 @@ const ChatScreen = (props) => {
       
     }
   }, [isLoading, tempImageUri, chatId])
+
+  const uploadDocument = useCallback(async () => {
+    setIsLoading(true);
+
+    try {
+
+      let id = chatId;
+      if (!id) {
+        // No chat Id. Create the chat
+        id = await createChat(userData.userId, props.route.params.newChatData);
+        setChatId(id);
+      }
+
+      const uploadUrl = await uploadDocumentAsync(tempDocUri, true);
+      setIsLoading(false);
+      await sendDocument(id, userData, uploadUrl, replyingTo && replyingTo.key, chatUsers, tempDocName)
+      setReplyingTo(null);
+      setTempDocUri("");
+      setTempDocName("");
+      
+    } catch (error) {
+      console.log(error);
+      console.log(error.message);
+      console.log(error.stack);
+      
+    }
+  }, [isLoading, tempDocUri, tempDocName, chatId])
 
   return (
     <SafeAreaView edges={["right", "left", "bottom"]} style={styles.container}>
@@ -212,6 +294,7 @@ const ChatScreen = (props) => {
                             setReply={() => setReplyingTo(message)}
                             replyingTo={message.replyTo && chatMessages.find(i => i.key === message.replyTo)}
                             imageUrl={message.imageUrl}
+                            documentUrl={message.documentUrl}
                           />
                 }}
               />
@@ -234,7 +317,7 @@ const ChatScreen = (props) => {
         <View style={styles.inputContainer}>
           <TouchableOpacity
             style={styles.mediaButton}
-            onPress={pickImage}
+            onPress={showActionSheet}
           >
             <Feather name="plus" size={24} color={colors.blue} />
           </TouchableOpacity>
@@ -288,6 +371,35 @@ const ChatScreen = (props) => {
                   {
                     !isLoading && tempImageUri !== "" &&
                     <Image source={{ uri: tempImageUri }} style={{ width: 200, height: 200 }} />
+                  }
+                </View>
+              )}
+            />
+
+            <AwesomeAlert
+              show={tempDocUri !== ""}
+              title='Send document?'
+              closeOnTouchOutside={true}
+              closeOnHardwareBackPress={false}
+              showCancelButton={true}
+              showConfirmButton={true}
+              cancelText='Cancel'
+              confirmText="Send document"
+              confirmButtonColor={colors.primary}
+              cancelButtonColor={colors.red}
+              titleStyle={styles.popupTitleStyle}
+              onCancelPressed={() => setTempDocUri("")}
+              onConfirmPressed={uploadDocument}
+              onDismiss={() => setTempDocUri("")}
+              customView={(
+                <View>
+                  {
+                    isLoading &&
+                    <ActivityIndicator size='small' color={colors.primary} />
+                  }
+                  {
+                    !isLoading && tempDocUri !== "" &&
+                    <Image source={{ uri: tempDocUri }} style={{ width: 200, height: 200 }} />
                   }
                 </View>
               )}

@@ -31,7 +31,7 @@ const initialState = {
     formIsValid: false
 }
 
-const SignUpForm = props => {
+const SignUpStudent = props => {
 
     const dispatch = useDispatch();
 
@@ -134,4 +134,4 @@ const SignUpForm = props => {
     )
 };
 
-export default SignUpForm;
+export default SignUpStudent;

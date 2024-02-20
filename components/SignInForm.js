@@ -9,12 +9,12 @@ import { useDispatch } from 'react-redux';
 import { signIn } from '../utils/actions/authActions';
 import colors from '../constants/colors.js';
 
-const isTestMode = false;
+const isTestMode = true;
 
 const initialState = {
     inputValues: {     
-        email: isTestMode ? "somaia@example.com": "",
-        password: isTestMode ? "asdfghjkl" : "",
+        email: isTestMode ? "210513471@ogr.altinbas.edu.tr": "",
+        password: isTestMode ? "password" : "",
     },
     inputValidities: {
         email: isTestMode,

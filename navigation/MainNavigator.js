@@ -6,6 +6,7 @@ import { Ionicons , FontAwesome5} from "@expo/vector-icons";
 import ChatSettingsScreen from "../screens/ChatSettingsScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import ChatListScreen from "../screens/ChatListScreen";
+import Timeline from "../screens/Timeline";
 import ChatScreen from "../screens/ChatScreen";
 import CoursesScreen from "../screens/CoursesScreen";
 import NewChatScreen from "../screens/NewChatScreen";
@@ -14,7 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getFirebaseApp } from "../utils/firebaseHelper";
 import { child, get, getDatabase, off, onValue, ref } from "firebase/database";
 import { setChatsData } from "../store/chatSlice";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, View, Linking } from "react-native";
 import colors from "../constants/colors";
 import commonStyles from "../constants/commonStyles";
 import { setStoredUsers } from "../store/userSlice";
@@ -22,17 +23,29 @@ import { setChatMessages, setStarredMessages } from "../store/messagesSlice";
 import ContactScreen from "../screens/ContactScreen";
 import DataListScreen from "../screens/DataListScreen";
 import { StackActions, useNavigation } from '@react-navigation/native';
-import { NavigationContainer } from "@react-navigation/native";
+import JoinChatScreen from "../screens/JoinChatScreen";;
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+
 const TabNavigator = () => {
+
   return (
     <Tab.Navigator screenOptions={{
       headerTitle: "",
       headerShadowVisible: false  
     }}>
+      <Tab.Screen
+        name="Timeline"
+        component={Timeline}
+        options={{
+          tabBarLabel: "Timeline",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="newspaper-outline" size={24} color="black" />
+          ),
+        }}
+      />
       <Tab.Screen
         name="ChatList"
         component={ChatListScreen}
@@ -108,6 +121,7 @@ const StackNavigator = () => {
             headerBackTitle: "Back",
           }}
         />
+        <Stack.Screen name="JoinChat" component={JoinChatScreen} />
       </Stack.Group>
 
       <Stack.Group screenOptions={{ presentation: 'containedModal' }}>
@@ -116,6 +130,7 @@ const StackNavigator = () => {
           component={NewChatScreen}
         />
       </Stack.Group>
+      
     </Stack.Navigator>
   )
 }

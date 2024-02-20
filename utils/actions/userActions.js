@@ -27,17 +27,32 @@ export const getUserChats = async (userId) => {
     }
 }
 
-export const deleteUserChat = async (userId, key) => {
+export const deleteUserChat = async (userId, chatId) => {
     try {
         const app = getFirebaseApp();
         const dbRef = ref(getDatabase(app));
-        const chatRef = child(dbRef, `userChats/${userId}/${key}`);
+        
+        // Retrieve the unique key associated with the chatId
+        const userChatsRef = child(dbRef, `userChats/${userId}`);
+        const snapshot = await get(userChatsRef);
 
-        await remove(chatRef);
+        if (snapshot.exists()) {
+            const userChats = snapshot.val();
+        
+            // Find the unique key associated with the chatId
+            const chatKey = Object.keys(userChats).find(key => userChats[key] === chatId);
+
+            if (chatKey) {
+                // Construct the reference using the unique key and remove it
+                const chatRef = child(dbRef, `userChats/${userId}/${chatKey}`);
+                await remove(chatRef);
+            }
+
+        } 
     } catch (error) {
-        console.log(error);
-        throw error;
-    }
+            console.log(error);
+            throw error;
+        }
 }
 
 export const addUserChat = async (userId, chatId) => {
@@ -45,7 +60,6 @@ export const addUserChat = async (userId, chatId) => {
         const app = getFirebaseApp();
         const dbRef = ref(getDatabase(app));
         const chatRef = child(dbRef, `userChats/${userId}`);
-
         await push(chatRef, chatId);
     } catch (error) {
         console.log(error);
