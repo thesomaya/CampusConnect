@@ -1,4 +1,5 @@
 Features to implement:
+- page not rendering when deleting a chat  
 - admin for group 
 - deleting otherUser message by admin in group
 - sending videos
@@ -21,7 +22,6 @@ Features to implement:
 - updating settings page to add different privacy options (lastseen and online, notifications, theme, storage prefrences) 
 
 Bug Fixes:
-page not rendering when deleting a chat  
 sign up roles not showing on android
 
 

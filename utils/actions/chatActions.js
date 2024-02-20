@@ -4,16 +4,16 @@ import { getUserPushTokens } from "./authActions";
 import { addUserChat, deleteUserChat, getUserChats } from "./userActions";
 import uuid from 'react-native-uuid';
 
-
 export const createChat = async (loggedInUserId, chatData) => {
-
+    
     const newChatData = {
         ...chatData,
         createdBy: loggedInUserId,
         updatedBy: loggedInUserId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        invitationCode: generateInvitationLink()
+        invitationCode: generateInvitationLink(),
+        admins: [loggedInUserId],
     };
 
     const app = getFirebaseApp();
@@ -23,8 +23,7 @@ export const createChat = async (loggedInUserId, chatData) => {
     const chatUsers = newChatData.users;
     for (let i = 0; i < chatUsers.length; i++) {
         const userId = chatUsers[i];
-        await push(child(dbRef, `userChats/${userId}`), newChat.key);
-        
+        await push(child(dbRef, `userChats/${userId}`), newChat.key);        
     }
 
     return newChat.key;
@@ -56,7 +55,6 @@ export const sendDocument = async (chatId, senderData, documentUrl, replyTo, cha
     const otherUsers = chatUsers.filter(uid => uid !== senderData.userId);
     await sendPushNotificationForUsers(otherUsers, `${senderData.firstName} ${senderData.lastName}`, `${senderData.firstName} sent a document`, chatId);
 }
-
 
 export const updateChatData = async (chatId, userId, chatData) => {
     const app = getFirebaseApp();
@@ -271,5 +269,26 @@ const sendPushNotificationForUsers = (chatUsers, title, body, chatId) => {
 export const generateInvitationLink = () => {
     const invitationCode = uuid.v4();
     return invitationCode;
+}
+
+export const addAdmin = async (chatId, userId) => {
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
+    const chatRef = child(dbRef, `chats/${chatId}`);
+
+    await update(chatRef, {
+        admins: [...chatData.admins, userId]
+    });
+}
+
+export const removeAdmin = async (chatId, userId) => {
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
+    const chatRef = child(dbRef, `chats/${chatId}`);
+
+    const updatedAdmins = chatData.admins.filter(adminId => adminId !== userId);
+    await update(chatRef, {
+        admins: updatedAdmins
+    });
 }
 

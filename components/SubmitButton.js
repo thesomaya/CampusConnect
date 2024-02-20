@@ -20,7 +20,6 @@ const SubmitButton = props => {
     </TouchableOpacity>
 };
 
-
 const styles = StyleSheet.create({
     button: {
         paddingHorizontal: 20,
