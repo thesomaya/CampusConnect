@@ -48,8 +48,6 @@ export const sendImage = async (chatId, senderData, imageUrl, replyTo, chatUsers
 }
 
 export const sendDocument = async (chatId, senderData, documentUrl, replyTo, chatUsers, documentName) => {
-    console.log(documentName);
-    console.log(documentUrl);
     await sendMessage(chatId, senderData.userId, documentName, null, documentUrl, replyTo, null);
 
     const otherUsers = chatUsers.filter(uid => uid !== senderData.userId);

@@ -30,17 +30,6 @@ const ChatListScreen = props => {
 
     const chatName = props.route?.params?.chatName;
 
-    console.log("selectedUser:" , selectedUser);
-    console.log("selectedUserList:" , selectedUserList);
-    console.log("userData:" , userData);
-    console.log("storedUsers:" , storedUsers);
-    console.log("chatsData:" , chatsData);
-    console.log("userChats:" , userChats);
-    console.log("filteredUserChats:" , filteredUserChats);
-    console.log("chatName:" , chatName);
-    console.log("-----------------------------------------------");
-
-
     useEffect(() => {
         props.navigation.setOptions({
             headerRight: () => {
@@ -83,8 +72,6 @@ const ChatListScreen = props => {
                 }
             }
         }
-        
-        
 
         props.navigation.navigate("ChatScreen", navigationProps);
 

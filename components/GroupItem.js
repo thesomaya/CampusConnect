@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import colors from '../constants/colors';
 import ProfileImage from './ProfileImage';
+
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
 import uuid from 'react-native-uuid';
@@ -30,7 +31,7 @@ const DataItem = props => {
     return (
         <TouchableWithoutFeedback 
         onPress={props.onPress}
-        onLongPress={() => (props.type !== "checkbox" && menuRef.current.props.ctx.menuActions.openMenu(id.current))}
+        //onLongPress={() => (props.type !== "checkbox" && menuRef.current.props.ctx.menuActions.openMenu(id.current))}
         style={{ width: '100%' }}        
         >
             <View style={styles.container}>
