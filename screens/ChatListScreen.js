@@ -15,17 +15,17 @@ const ChatListScreen = props => {
     const selectedUserList = props.route?.params?.selectedUsers;
     const userData = useSelector(state => state.auth.userData);
     const storedUsers = useSelector(state => state.users.storedUsers);
-    /*const userChats = useSelector(state => {
+    const userChats = useSelector(state => {
         const chatsData = state.chats.chatsData;
         return Object.values(chatsData).sort((a, b) => {
             return new Date(b.updatedAt) - new Date(a.updatedAt);
         });
-    });*/
-    //const [chatsData, setChatsData] = useState([]);
-    const chatsData = useSelector(state => state.chats.chatsData);  
-    const userChats = Object.values(chatsData).sort((a, b) => {
-        return new Date(b.updatedAt) - new Date(a.updatedAt);
     });
+    //const [chatsData, setChatsData] = useState([]);
+    //const chatsData = useSelector(state => state.chats.chatsData);  
+    //const userChats = Object.values(chatsData).sort((a, b) => {
+    //    return new Date(b.updatedAt) - new Date(a.updatedAt);
+    //});
     const filteredUserChats = userChats.filter(chat => !chat.isCourseChat);
 
     const chatName = props.route?.params?.chatName;

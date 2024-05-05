@@ -13,7 +13,7 @@ const isTestMode = true;
 
 const initialState = {
     inputValues: {     
-        email: isTestMode ? "210513471@ogr.altinbas.edu.tr": "",
+        email: isTestMode ? "somaia@altinbas.edu.tr": "",
         password: isTestMode ? "password" : "",
     },
     inputValidities: {

@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import colors from '../constants/colors';
 import ProfileImage from './ProfileImage';
-
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
 import uuid from 'react-native-uuid';
@@ -22,7 +21,7 @@ const MenuItem = props => {
     </MenuOption>
 }
 
-const DataItem = props => {
+const GroupItem = props => {
     const { title, subTitle, image, type, isChecked, icon, chatId } = props;
     const hideImage = props.hideImage && props.hideImage === true;
     const menuRef = useRef(null);
@@ -154,4 +153,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default DataItem;
+export default GroupItem;

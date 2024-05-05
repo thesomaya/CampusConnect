@@ -1,23 +1,34 @@
-import React from 'react';
+import React, { useEffect, useState }  from 'react';
 import { View, Text, TouchableOpacity, TouchableWithoutFeedback, Modal, StyleSheet } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faInfoCircle, faUserShield, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import ProfileImage from './ProfileImage';
 import { AntDesign } from '@expo/vector-icons';
+import { isAdmin } from '../utils/actions/chatActions';
 
 const imageSize = 40;
 
-const UserPreview = ({ user, onPressInfo, onPressMakeAdmin, onPressRemove, onClose }) => {
+const UserPreview = ({ userData, chatData, onPressInfo, onPressMakeAdmin, onPressRemove, onClose }) => {
+  console.log("hello: ",userData);
+  const [isAdminUser, setIsAdminUser] = useState(false);
+
+  isAdmin(userData, chatData).then(adminStatus => {
+    setIsAdminUser(adminStatus);
+  });
+
+
+  const adminText = isAdminUser ? "Remove group admin" : "Make group admin";
+
   return (
     <Modal animationType="none" transparent visible={true}>
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
             <View style={styles.nameContainer}>
             <ProfileImage 
-                uri={user.profilePicture}
+                uri={userData.profilePicture}
                 size={imageSize}
                 />
-            <Text style={styles.name}>{user.name}</Text>
+            <Text style={styles.name}>{userData.name}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                 <AntDesign name="closecircleo" size={24} color="black" />
             </TouchableOpacity>
@@ -29,7 +40,7 @@ const UserPreview = ({ user, onPressInfo, onPressMakeAdmin, onPressRemove, onClo
             </TouchableOpacity>
             <TouchableOpacity onPress={onPressMakeAdmin} style={styles.action}>
               <FontAwesomeIcon icon={faUserShield} size={20} color="black" />
-              <Text style={styles.actionText}>Make Group Admin</Text>
+              <Text style={styles.actionText}>{adminText}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={onPressRemove} style={styles.action}>
               <FontAwesomeIcon icon={faTrashAlt} size={18} color="black" />

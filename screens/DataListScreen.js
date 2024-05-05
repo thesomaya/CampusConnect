@@ -1,18 +1,43 @@
-import React, { useEffect } from 'react';
-import { FlatList, Text } from 'react-native';
+import React, { useEffect, useState} from 'react';
+import { FlatList } from 'react-native';
 import { useSelector } from 'react-redux';
+import GroupItem from '../components/GroupItem';
 import DataItem from '../components/DataItem';
 import PageContainer from '../components/PageContainer';
+import UserPreview from "../components/UserPreview";
+import { addUsersToChat, removeUserFromChat, updateChatData} from "../utils/actions/chatActions";
+import {
+    addAdmin,
+    isAdmin,
+  } from "../utils/actions/chatActions";
 
 const DataListScreen = props => {
+
+    const [showUserPreview, setShowUserPreview] = useState(false);
+    const [selectedUser, setSelectedUser] = useState();
 
     const storedUsers = useSelector(state => state.users.storedUsers);
     const userData = useSelector(state => state.auth.userData);
     const messagesData = useSelector(state => state.messages.messagesData);
     
-    const { title, data, type, chatId } = props.route.params;
+    const { title, data, type, chatId, chatData} = props.route.params;
+    console.log("data: ", chatData);
 
     useEffect(() => {
+      }, [selectedUser]);
+
+    const handleGroupItemPress = (user) => {
+        setSelectedUser(user);
+        console.log("*",selectedUser);
+        setShowUserPreview(true);
+      };
+
+    const handleGroupItemClose= () => {
+        setSelectedUser(null);
+        setShowUserPreview(false);
+    };
+    
+      useEffect(() => {
         props.navigation.setOptions({ headerTitle: title })
     }, [title])
 
@@ -36,7 +61,7 @@ const DataListScreen = props => {
                         title = `${currentUser.firstName} ${currentUser.lastName}`;
                         subTitle = currentUser.about;
                         itemType = isLoggedInUser ? undefined : "link";
-                        onPress = isLoggedInUser ? undefined : () => props.navigation.navigate("Contact", { uid, chatId })
+                        onPress = isLoggedInUser ? undefined : () => handleGroupItemPress(currentUser)
                     }
                     else if (type === "messages") {
                         const starData = itemData.item;
@@ -58,16 +83,41 @@ const DataListScreen = props => {
                         onPress = () => {}
                     }
 
-                    return <DataItem
+                    return type==="users" ? (<GroupItem
                         key={key}
                         onPress={onPress}
                         image={image}
                         title={title}
                         subTitle={subTitle}
                         type={itemType}
-                    />
+                    />) : (<DataItem
+                    key={key}
+                    onPress={onPress}
+                    image={image}
+                    title={title}
+                    subTitle={subTitle}
+                    type={itemType}
+                />)
+
                 }}
             />
+            {   
+                showUserPreview && selectedUser &&  selectedUser.userId !== userData.userId && (
+                <UserPreview
+                userData={{
+                        userId: selectedUser.userId,
+                        profilePicture: selectedUser.profilePicture,
+                        name: `${selectedUser.firstName} ${selectedUser.lastName}`,
+                    }}
+                    chatData={chatData}
+                    onPressInfo={() =>
+                        props.navigation.navigate("Contact", {  uid: selectedUser.userId, chatId: chatId })
+                    }
+                    onPressMakeAdmin={() => addAdmin(selectedUser, chatData)}
+                    onPressRemove={() => removeUserFromChat(userData, selectedUser, chatData)}
+                    onClose={() => handleGroupItemClose()}
+                />)
+            }
 
     </PageContainer>
 };

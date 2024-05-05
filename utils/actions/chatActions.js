@@ -269,24 +269,52 @@ export const generateInvitationLink = () => {
     return invitationCode;
 }
 
-export const addAdmin = async (chatId, userId) => {
-    const app = getFirebaseApp();
-    const dbRef = ref(getDatabase(app));
-    const chatRef = child(dbRef, `chats/${chatId}`);
+export const addAdmin = async (userData, chatData) => {
+    
+    try {
+        const app = getFirebaseApp(); // Assuming getFirebaseApp is defined somewhere
+        const dbRef = ref(getDatabase(app));
+        const chatRef = child(dbRef, `chats/${chatData.key}`);
+        
+        await update(chatRef, {
+            admins: [...chatData.admins, userData.userId]
+        });
 
-    await update(chatRef, {
-        admins: [...chatData.admins, userId]
-    });
+        console.log("Admin added successfully");
+    } catch (error) {
+        console.error("Error adding admin:", error.message);
+    }
+};
+
+export const removeAdmin = async (userData, chatData) => {
+    try {
+        const app = getFirebaseApp();
+        const dbRef = ref(getDatabase(app));
+        const chatRef = child(dbRef, `chats/${chatData.key}`);
+
+        const updatedAdmins = chatData.admins.filter(adminId => adminId !== userData.userId);
+        await update(chatRef, {
+            admins: updatedAdmins
+        });
+    } catch (error) {
+        console.log("error removing admin. ", error);
+    }
+    
 }
 
-export const removeAdmin = async (chatId, userId) => {
-    const app = getFirebaseApp();
-    const dbRef = ref(getDatabase(app));
-    const chatRef = child(dbRef, `chats/${chatId}`);
+export const isAdmin = async (userData, chatData) => {
+    try {
+        const app = getFirebaseApp();
+        const dbRef = ref(getDatabase(app));
+        const chatRef = child(dbRef, `chats/${chatData.key}`);
+        const chatSnapshot = await get(chatRef);
+        const chatDataFromDB = chatSnapshot.val();
+        const adminStatus = chatDataFromDB.admins.includes(userData.userId);
+        return adminStatus;
 
-    const updatedAdmins = chatData.admins.filter(adminId => adminId !== userId);
-    await update(chatRef, {
-        admins: updatedAdmins
-    });
+    } catch (error) {
+        console.log(error);
+    }
+    
 }
 

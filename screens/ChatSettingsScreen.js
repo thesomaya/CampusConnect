@@ -18,7 +18,9 @@ import ProfileImage from "../components/ProfileImage";
 import SubmitButton from "../components/SubmitButton";
 import colors from "../constants/colors";
 import {
+  addAdmin,
   addUsersToChat,
+  isAdmin,
   removeUserFromChat,
   updateChatData,
 } from "../utils/actions/chatActions";
@@ -38,7 +40,7 @@ const ChatSettingsScreen = (props) => {
     (state) => state.messages.starredMessages[chatId] ?? {}
   );
   const [showUserPreview, setShowUserPreview] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUser, setSelectedUser] = useState();
 
   const initialState = {
     inputValues: { chatName: chatData.chatName },
@@ -48,14 +50,17 @@ const ChatSettingsScreen = (props) => {
 
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
   
-  const handleGroupItemPress = (user) => {
+  const handleGroupItemPress = async (user) => {
     setSelectedUser(user);
     setShowUserPreview(true);
+    //const isGroupAdmin = await isAdmin(user, chatData);
+    //console.log("break");
   };
   const handleGroupItemClose= () => {
     setSelectedUser(null);
     setShowUserPreview(false);
   };
+  
   const selectedUsers = props.route.params && props.route.params.selectedUsers;
   useEffect(() => {
     if (!selectedUsers) {
@@ -126,7 +131,6 @@ const ChatSettingsScreen = (props) => {
       setIsLoading(true);
 
       await removeUserFromChat(userData, userData, chatData);
-
       props.navigation.popToTop();
     } catch (error) {
       console.log(error);
@@ -208,6 +212,7 @@ const ChatSettingsScreen = (props) => {
               <View>
                 {
                   <GroupItem
+                    key={uid}
                     image={currentUser.profilePicture}
                     title={`${currentUser.firstName} ${currentUser.lastName}`}
                     subTitle={currentUser.about}
@@ -216,26 +221,26 @@ const ChatSettingsScreen = (props) => {
                   />
                 }
 
-                {showUserPreview && selectedUser &&  selectedUser.userId !== userData.userId && selectedUser.userId === uid && (
+                {
+                  showUserPreview && selectedUser &&  selectedUser.userId !== userData.userId && selectedUser.userId === uid && (
                   <UserPreview
-                    user={{
-                      profilePicture: currentUser.profilePicture,
-                      name: `${currentUser.firstName} ${currentUser.lastName}`,
-                    }}
+                    key={uid-"preview"}
+                    userData={currentUser}
+                    chatData={chatData}
                     onPressInfo={() =>
                       props.navigation.navigate("Contact", { uid , chatId })
                     }
-                    onPressMakeAdmin={() => {}}
-                    onPressRemove={() => leaveChat()}
+                    onPressMakeAdmin={() => addAdmin(currentUser, chatData)}
+                    onPressRemove={() => removeUserFromChat(userData, currentUser, chatData)}
                     onClose={() => handleGroupItemClose()}
-                  />
-                )}
+                  />)
+                }
               </View>
             );
           })}
 
           {chatData.users.length > 4 && (
-            <DataItem
+            <GroupItem
               type={"link"}
               title="View all"
               hideImage={true}
@@ -245,13 +250,14 @@ const ChatSettingsScreen = (props) => {
                   data: chatData.users,
                   type: "users",
                   chatId,
+                  chatData
                 })
               }
             />
           )}
         </View>
 
-        <DataItem
+        <GroupItem
           type={"link"}
           title="Starred messages"
           hideImage={true}
