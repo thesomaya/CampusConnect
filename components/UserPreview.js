@@ -9,12 +9,20 @@ import { isAdmin } from '../utils/actions/chatActions';
 const imageSize = 40;
 
 const UserPreview = ({ userData, chatData, onPressInfo, onPressMakeAdmin, onPressRemove, onClose }) => {
-  console.log("hello: ",userData);
   const [isAdminUser, setIsAdminUser] = useState(false);
 
-  isAdmin(userData, chatData).then(adminStatus => {
-    setIsAdminUser(adminStatus);
-  });
+  useEffect(() => {
+    const fetchAdminStatus = async () => {
+      try {
+        const adminStatus = await isAdmin(userData, chatData);
+        setIsAdminUser(adminStatus);
+      } catch (error) {
+        console.error("Error fetching admin status:", error);
+      }
+    };
+
+    fetchAdminStatus();
+  }, [userData, chatData]);
 
 
   const adminText = isAdminUser ? "Remove group admin" : "Make group admin";

@@ -1,32 +1,32 @@
+import * as Clipboard from "expo-clipboard";
 import React, { useCallback, useEffect, useReducer, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
 } from "react-native";
 import { useSelector } from "react-redux";
 import DataItem from "../components/DataItem";
 import GroupItem from "../components/GroupItem";
-import UserPreview from "../components/UserPreview";
 import Input from "../components/Input";
 import PageContainer from "../components/PageContainer";
 import PageTitle from "../components/PageTitle";
 import ProfileImage from "../components/ProfileImage";
 import SubmitButton from "../components/SubmitButton";
+import UserPreview from "../components/UserPreview";
 import colors from "../constants/colors";
 import {
   addAdmin,
   addUsersToChat,
   isAdmin,
+  removeAdmin,
   removeUserFromChat,
   updateChatData,
 } from "../utils/actions/chatActions";
 import { validateInput } from "../utils/actions/formActions";
 import { reducer } from "../utils/reducers/formReducer";
-import * as Clipboard from "expo-clipboard";
 
 const ChatSettingsScreen = (props) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +41,9 @@ const ChatSettingsScreen = (props) => {
   );
   const [showUserPreview, setShowUserPreview] = useState(false);
   const [selectedUser, setSelectedUser] = useState();
+  const [isAdminUser, setIsAdminUser] = useState();
+  const [userAdmins, setUserAdmins] = useState({});
+
 
   const initialState = {
     inputValues: { chatName: chatData.chatName },
@@ -53,13 +56,13 @@ const ChatSettingsScreen = (props) => {
   const handleGroupItemPress = async (user) => {
     setSelectedUser(user);
     setShowUserPreview(true);
-    //const isGroupAdmin = await isAdmin(user, chatData);
-    //console.log("break");
+    const isGroupAdmin = await isAdmin(user, chatData);
+    setIsAdminUser(isGroupAdmin);
   };
   const handleGroupItemClose= () => {
     setSelectedUser(null);
     setShowUserPreview(false);
-  };
+  };  
   
   const selectedUsers = props.route.params && props.route.params.selectedUsers;
   useEffect(() => {
@@ -206,10 +209,20 @@ const ChatSettingsScreen = (props) => {
             }
           />
 
-          {chatData.users.slice(0, 4).map((uid) => {
+          {chatData.users.slice(0, 4).map( (uid) => {
             const currentUser = storedUsers[uid];
+            const handleAdminStatus = async (currentUser) => {
+              const adminValue = await isAdmin(currentUser, chatData);
+              setUserAdmins((prevAdmins) => ({ ...prevAdmins, [uid]: adminValue }));
+            };
+          
+            useEffect(() => {
+              handleAdminStatus(storedUsers[uid]);
+            }, [uid]);
+          
+            const currentAdmin = userAdmins[uid];
             return (
-              <View>
+              <View key={uid}>
                 {
                   <GroupItem
                     key={uid}
@@ -217,7 +230,8 @@ const ChatSettingsScreen = (props) => {
                     title={`${currentUser.firstName} ${currentUser.lastName}`}
                     subTitle={currentUser.about}
                     type={uid !== userData.userId ? "link" : undefined}
-                    onPress={() => handleGroupItemPress(currentUser)}
+                    onPress={() => handleGroupItemPress(currentUser)}  
+                    admin={currentAdmin}
                   />
                 }
 
@@ -227,11 +241,13 @@ const ChatSettingsScreen = (props) => {
                     key={uid-"preview"}
                     userData={currentUser}
                     chatData={chatData}
-                    onPressInfo={() =>
-                      props.navigation.navigate("Contact", { uid , chatId })
-                    }
-                    onPressMakeAdmin={() => addAdmin(currentUser, chatData)}
-                    onPressRemove={() => removeUserFromChat(userData, currentUser, chatData)}
+                    onPressInfo={() => {
+                      props.navigation.navigate("Contact", { uid, chatId });
+                      handleGroupItemClose();
+                    }}
+                    onPressMakeAdmin={() => isAdminUser ? removeAdmin(currentUser, chatData).then(() => handleGroupItemClose()) : 
+                      addAdmin(currentUser, chatData).then(() => handleGroupItemClose()) }
+                    onPressRemove={() => removeUserFromChat(userData, currentUser, chatData).then(() => handleGroupItemClose())}
                     onClose={() => handleGroupItemClose()}
                   />)
                 }
@@ -250,7 +266,7 @@ const ChatSettingsScreen = (props) => {
                   data: chatData.users,
                   type: "users",
                   chatId,
-                  chatData
+                  chatData,
                 })
               }
             />

@@ -1,11 +1,11 @@
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 import React, { useRef } from 'react';
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
-import colors from '../constants/colors';
-import ProfileImage from './ProfileImage';
-import { Ionicons, AntDesign } from '@expo/vector-icons';
-import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
+import { Menu, MenuOption, MenuOptions, MenuTrigger } from 'react-native-popup-menu';
 import uuid from 'react-native-uuid';
-import {deletingChat} from '../utils/actions/chatActions';
+import colors from '../constants/colors';
+import { deletingChat } from '../utils/actions/chatActions';
+import ProfileImage from './ProfileImage';
 
 const imageSize = 40;
 
@@ -21,8 +21,10 @@ const MenuItem = props => {
     </MenuOption>
 }
 
-const GroupItem = props => {
-    const { title, subTitle, image, type, isChecked, icon, chatId } = props;
+const GroupItem = props =>  {
+    const { title, subTitle, image, type, isChecked, icon, chatId, admin} = props;
+    console.log("groupitem", title, admin);
+
     const hideImage = props.hideImage && props.hideImage === true;
     const menuRef = useRef(null);
     const id = useRef(uuid.v4());
@@ -30,7 +32,6 @@ const GroupItem = props => {
     return (
         <TouchableWithoutFeedback 
         onPress={props.onPress}
-        //onLongPress={() => (props.type !== "checkbox" && menuRef.current.props.ctx.menuActions.openMenu(id.current))}
         style={{ width: '100%' }}        
         >
             <View style={styles.container}>
@@ -77,6 +78,13 @@ const GroupItem = props => {
                         <Ionicons name="checkmark" size={18} color="white" />
                     </View>
                 }
+                {
+                    admin &&
+                    <Text style={styles.admin}>
+                        Admin
+                    </Text>
+                }
+
 
                 {
                     type === "link" &&
@@ -131,6 +139,12 @@ const styles = StyleSheet.create({
     checkedStyle: {
         backgroundColor: colors.primary,
         borderColor: 'transparent'
+    },
+    admin : { 
+        backgroundColor: "#FAFAFA",
+        fontFamily: 'regular',
+        color: colors.grey,
+        letterSpacing: 0.3
     },
     leftIconContainer: {
         backgroundColor: colors.extraLightGrey,
