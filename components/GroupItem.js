@@ -23,7 +23,6 @@ const MenuItem = props => {
 
 const GroupItem = props =>  {
     const { title, subTitle, image, type, isChecked, icon, chatId, admin} = props;
-    console.log("groupitem", title, admin);
 
     const hideImage = props.hideImage && props.hideImage === true;
     const menuRef = useRef(null);

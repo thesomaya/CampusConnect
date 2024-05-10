@@ -1,21 +1,24 @@
-import React, { useEffect, useState }  from 'react';
-import { View, Text, TouchableOpacity, TouchableWithoutFeedback, Modal, StyleSheet } from 'react-native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faInfoCircle, faUserShield, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
-import ProfileImage from './ProfileImage';
 import { AntDesign } from '@expo/vector-icons';
+import { faInfoCircle, faTrashAlt, faUserShield } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import React, { useEffect, useState } from 'react';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { isAdmin } from '../utils/actions/chatActions';
+import ProfileImage from './ProfileImage';
 
 const imageSize = 40;
 
-const UserPreview = ({ userData, chatData, onPressInfo, onPressMakeAdmin, onPressRemove, onClose }) => {
+const UserPreview = ({ userData, LoggedInUser, name, image, chatData, onPressInfo, onPressMakeAdmin, onPressRemove, onClose }) => {
   const [isAdminUser, setIsAdminUser] = useState(false);
+  const [LoggedInIsAdmin, setLoggedInIsAdmin] = useState(false);
 
   useEffect(() => {
     const fetchAdminStatus = async () => {
       try {
         const adminStatus = await isAdmin(userData, chatData);
+        const loggedInStatus = await isAdmin(LoggedInUser, chatData);
         setIsAdminUser(adminStatus);
+        setLoggedInIsAdmin(loggedInStatus);
       } catch (error) {
         console.error("Error fetching admin status:", error);
       }
@@ -33,10 +36,10 @@ const UserPreview = ({ userData, chatData, onPressInfo, onPressMakeAdmin, onPres
         <View style={styles.modalContent}>
             <View style={styles.nameContainer}>
             <ProfileImage 
-                uri={userData.profilePicture}
+                uri={image}
                 size={imageSize}
                 />
-            <Text style={styles.name}>{userData.name}</Text>
+            <Text style={styles.name}>{name}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                 <AntDesign name="closecircleo" size={24} color="black" />
             </TouchableOpacity>
@@ -46,14 +49,18 @@ const UserPreview = ({ userData, chatData, onPressInfo, onPressMakeAdmin, onPres
               <FontAwesomeIcon icon={faInfoCircle} size={20} color="black" />
               <Text style={styles.actionText}>Info</Text>
             </TouchableOpacity>
+            { LoggedInIsAdmin &&
             <TouchableOpacity onPress={onPressMakeAdmin} style={styles.action}>
               <FontAwesomeIcon icon={faUserShield} size={20} color="black" />
               <Text style={styles.actionText}>{adminText}</Text>
             </TouchableOpacity>
+            }
+            { LoggedInIsAdmin &&
             <TouchableOpacity onPress={onPressRemove} style={styles.action}>
               <FontAwesomeIcon icon={faTrashAlt} size={18} color="black" />
               <Text style={styles.actionText}>Remove from Group</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> 
+            }
           </View>
           
         </View>

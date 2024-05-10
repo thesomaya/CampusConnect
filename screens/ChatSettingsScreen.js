@@ -40,7 +40,7 @@ const ChatSettingsScreen = (props) => {
     (state) => state.messages.starredMessages[chatId] ?? {}
   );
   const [showUserPreview, setShowUserPreview] = useState(false);
-  const [selectedUser, setSelectedUser] = useState();
+  const [selectedUser, setSelectedUser] = useState(null);
   const [isAdminUser, setIsAdminUser] = useState();
   const [userAdmins, setUserAdmins] = useState({});
 
@@ -58,6 +58,7 @@ const ChatSettingsScreen = (props) => {
     setShowUserPreview(true);
     const isGroupAdmin = await isAdmin(user, chatData);
     setIsAdminUser(isGroupAdmin);
+
   };
   const handleGroupItemClose= () => {
     setSelectedUser(null);
@@ -236,10 +237,14 @@ const ChatSettingsScreen = (props) => {
                 }
 
                 {
-                  showUserPreview && selectedUser &&  selectedUser.userId !== userData.userId && selectedUser.userId === uid && (
+                  selectedUser &&  showUserPreview && selectedUser.userId !== userData.userId && selectedUser.userId === uid &&
+                   (
                   <UserPreview
                     key={uid-"preview"}
                     userData={currentUser}
+                    LoggedInUser={userData}
+                    name={`${currentUser.firstName} ${currentUser.lastName}`}
+                    image={currentUser.profilePicture}
                     chatData={chatData}
                     onPressInfo={() => {
                       props.navigation.navigate("Contact", { uid, chatId });
@@ -290,9 +295,9 @@ const ChatSettingsScreen = (props) => {
       {
         <SubmitButton
           title="Leave chat"
-          color={colors.red}
+          color={colors.black}
           onPress={() => leaveChat()}
-          style={{ marginBottom: 20 }}
+          style={{ width: '40%', alignSelf: 'center', marginBottom: 20 }}
         />
       }
     </PageContainer>

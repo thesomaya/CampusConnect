@@ -132,11 +132,14 @@ const DataListScreen = props => {
             {   
                 showUserPreview && selectedUser &&  selectedUser.userId !== userData.userId && (
                     <UserPreview
-                        userData={{
+                    userData={{
                                 userId: selectedUser.userId,
                                 profilePicture: selectedUser.profilePicture,
                                 name: `${selectedUser.firstName} ${selectedUser.lastName}`,
                             }}
+                        LoggedInUser={userData}
+                        name = {`${selectedUser.firstName} ${selectedUser.lastName}`}
+                        image = {selectedUser.profilePicture}
                         chatData={chatData}
                         onPressInfo={() => {
                             props.navigation.navigate("Contact", {  uid: selectedUser.userId, chatId: chatId });

@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import DataItem from '../components/DataItem';
 import PageContainer from '../components/PageContainer';
 import PageTitle from '../components/PageTitle';
 import ProfileImage from '../components/ProfileImage';
-import SubmitButton from '../components/SubmitButton';
 import colors from '../constants/colors';
 import { removeUserFromChat } from '../utils/actions/chatActions';
 import { getUserChats } from '../utils/actions/userActions';
@@ -83,19 +82,6 @@ const ContactScreen = props => {
                     })
                 }
             </>
-        }
-
-        {
-            chatData && chatData.isGroupChat &&
-            (
-                isLoading ?
-                <ActivityIndicator size='small' color={colors.primary} /> :
-                <SubmitButton
-                    title="Remove from chat"
-                    color={colors.red}
-                    onPress={removeFromChat}
-                />
-            )
         }
 
     </PageContainer>

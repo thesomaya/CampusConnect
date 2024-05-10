@@ -1,6 +1,6 @@
 import { Feather, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import React, { useCallback, useMemo, useReducer, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import DataItem from '../components/DataItem';
 import Input from '../components/Input';
@@ -207,7 +207,7 @@ const SettingsScreen = props => {
                 title="Logout"
                 onPress={() => dispatch(userLogout(userData)) }
                 style={{ marginTop: 20 }}
-                color={colors.red}/>
+                color={colors.black}/>
 
         </ScrollView>   
     </PageContainer>
