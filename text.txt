@@ -1,6 +1,11 @@
+Priorities: 
+- block 
+- inviting link 
+- announcement page 
+
 Features to implement:
 - page not rendering when deleting a chat  
-- admin for group 
+- extra admin for group 
 - deleting otherUser message by admin in group
 - sending videos
 - download feature for photos videos documents 

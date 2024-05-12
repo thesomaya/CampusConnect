@@ -1,29 +1,30 @@
+import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { StackActions, useNavigation } from '@react-navigation/native';
+import { createStackNavigator } from "@react-navigation/stack";
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import React, { useEffect, useRef, useState } from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Ionicons , FontAwesome5} from "@expo/vector-icons";
-import ChatSettingsScreen from "../screens/ChatSettingsScreen";
-import SettingsScreen from "../screens/SettingsScreen";
-import ChatListScreen from "../screens/ChatListScreen";
-import Timeline from "../screens/Timeline";
-import ChatScreen from "../screens/ChatScreen";
-import CoursesScreen from "../screens/CoursesScreen";
-import NewChatScreen from "../screens/NewChatScreen";
-import { createStackNavigator } from "@react-navigation/stack";
-import { useDispatch, useSelector } from "react-redux";
-import { getFirebaseApp } from "../utils/firebaseHelper";
 import { child, get, getDatabase, off, onValue, ref } from "firebase/database";
-import { setChatsData } from "../store/chatSlice";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, View, Linking } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import colors from "../constants/colors";
 import commonStyles from "../constants/commonStyles";
-import { setStoredUsers } from "../store/userSlice";
-import { setChatMessages, setStarredMessages } from "../store/messagesSlice";
+import ChatListScreen from "../screens/ChatListScreen";
+import ChatScreen from "../screens/ChatScreen";
+import ChatSettingsScreen from "../screens/ChatSettingsScreen";
 import ContactScreen from "../screens/ContactScreen";
+import CoursesScreen from "../screens/CoursesScreen";
 import DataListScreen from "../screens/DataListScreen";
-import { StackActions, useNavigation } from '@react-navigation/native';
-import JoinChatScreen from "../screens/JoinChatScreen";;
+import JoinChatScreen from "../screens/JoinChatScreen";
+import NewChatScreen from "../screens/NewChatScreen";
+import SettingsScreen from "../screens/SettingsScreen";
+import Timeline from "../screens/Timeline";
+import { setChatsData } from "../store/chatSlice";
+import { setChatMessages, setStarredMessages } from "../store/messagesSlice";
+import { setPostsData } from "../store/postSlice";
+import { setStoredUsers } from "../store/userSlice";
+import { getFirebaseApp } from "../utils/firebaseHelper";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -144,6 +145,7 @@ const MainNavigator = (props) => {
 
   const userData = useSelector(state => state.auth.userData);
   const storedUsers = useSelector(state => state.users.storedUsers);
+  const posts = useSelector(state => state.posts);
 
   const [expoPushToken, setExpoPushToken] = useState('');
   const notificationListener = useRef();
@@ -253,10 +255,18 @@ const MainNavigator = (props) => {
       dispatch(setStarredMessages({ starredMessages }));
     })
 
+    const postsRef = child(dbRef, `posts`);
+    refs.push(postsRef);
+    onValue(postsRef, querySnapshot => {
+      const postsData = querySnapshot.val() ?? {};
+      dispatch(setPostsData({ postsData }));
+    })
+
     return () => {
       console.log("Unsubscribing firebase listeners");
       refs.forEach(ref => off(ref));
     }
+
   }, []);
 
   if (isLoading) {

@@ -1,8 +1,8 @@
 import { child, get, getDatabase, push, ref, remove, set, update } from "firebase/database";
+import uuid from 'react-native-uuid';
 import { getFirebaseApp } from "../firebaseHelper";
 import { getUserPushTokens } from "./authActions";
 import { addUserChat, deleteUserChat, getUserChats } from "./userActions";
-import uuid from 'react-native-uuid';
 
 export const createChat = async (loggedInUserId, chatData) => {
     
@@ -110,11 +110,9 @@ export const starMessage = async (messageId, chatId, userId) => {
         const snapshot = await get(childRef);
 
         if (snapshot.exists()) {
-            // Starred item exists - Un-star
             await remove(childRef);
         }
         else {
-            // Starred item does not exist - star
             const starredMessageData = {
                 messageId,
                 chatId,
@@ -164,21 +162,17 @@ export const deletingChat = async (chatId) => {
         const app = getFirebaseApp();
         const dbRef = ref(getDatabase(app));
 
-        // Get the chat data to obtain the list of users
         const chatSnapshot = await get(child(dbRef, `chats/${chatId}`));
 
         const chatData = chatSnapshot.val();
         const chatUsers = chatData.users;
-        // Delete all messages in the chat
         const messagesRef = child(dbRef, `messages/${chatId}`);
         await remove(messagesRef);
 
-        // Remove the chat from userChats for each user
         for (const userId of chatUsers) {
             await deleteUserChat(userId, chatId);
         }
 
-        // Remove the chat reference 
         const chatRef = child(dbRef, `chats/${chatId}`);
         await remove(chatRef);
         return true;

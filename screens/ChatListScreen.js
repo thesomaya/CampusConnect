@@ -21,11 +21,7 @@ const ChatListScreen = props => {
             return new Date(b.updatedAt) - new Date(a.updatedAt);
         });
     });
-    //const [chatsData, setChatsData] = useState([]);
-    //const chatsData = useSelector(state => state.chats.chatsData);  
-    //const userChats = Object.values(chatsData).sort((a, b) => {
-    //    return new Date(b.updatedAt) - new Date(a.updatedAt);
-    //});
+ 
     const filteredUserChats = userChats.filter(chat => !chat.isCourseChat);
 
     const chatName = props.route?.params?.chatName;
