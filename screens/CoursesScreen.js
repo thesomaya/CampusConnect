@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
-import DataItem from '../components/DataItem';
+import CourseItem from '../components/CourseItem';
 import PageContainer from '../components/PageContainer';
 import PageTitle from '../components/PageTitle';
 import colors from '../constants/colors';
@@ -10,7 +10,7 @@ const CoursesScreen = props => {
 
     const selectedUser = props.route?.params?.selectedUserId;
     const selectedUserList = props.route?.params?.selectedUsers;
-
+    const [creatorNames, setCreatorNames] = useState({});
     const userData = useSelector(state => state.auth.userData);
     const storedUsers = useSelector(state => state.users.storedUsers);
     const userChats = useSelector(state => {
@@ -19,6 +19,9 @@ const CoursesScreen = props => {
             return new Date(b.updatedAt) - new Date(a.updatedAt);
         });
     });
+
+
+    
     const chatName = props.route?.params?.chatName;
 
     const filteredUserChats = userChats.filter(chat => chat.isCourseChat);
@@ -61,6 +64,24 @@ const CoursesScreen = props => {
 
     }, [props.route?.params])
     
+    useEffect(() => {
+        const fetchCreatorNames = async () => {
+            const names = {};
+            for (const chat of filteredUserChats) {
+                const createdBy = chat.createdBy;
+                if (createdBy && !names[createdBy]) {
+                    const creator = storedUsers[createdBy];
+                    if (creator) {
+                        names[createdBy] = `${creator.firstName} ${creator.lastName}`;
+                    }
+                }
+            }
+            setCreatorNames(names);
+        };
+
+        fetchCreatorNames();
+    }, [storedUsers]);
+
     return <PageContainer>
 
         <PageTitle text="Courses" />
@@ -97,12 +118,15 @@ const CoursesScreen = props => {
                         title = `${otherUser.firstName} ${otherUser.lastName}`;
                         image = otherUser.profilePicture;
                     }
+                    const createdBy = chatData.createdBy;
+                    const creatorName = creatorNames[createdBy] || "";
 
-                    return <DataItem
+                    return <CourseItem
                                 title={title}
                                 chatId={chatId}
                                 subTitle={subTitle}
                                 image={image}
+                                creatorName={creatorName}
                                 onPress={() => props.navigation.navigate("ChatScreen", { chatId })}
                             />
                 }}
@@ -119,7 +143,7 @@ const styles = StyleSheet.create({
     newGroupText: {
         color: colors.blue,
         fontSize: 17,
-        marginBottom: 5
+        marginBottom: 10
     }
 })
 

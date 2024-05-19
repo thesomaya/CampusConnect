@@ -1,18 +1,18 @@
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 import React, { useRef } from 'react';
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
-import colors from '../constants/colors';
-import ProfileImage from './ProfileImage';
-import { Ionicons, AntDesign } from '@expo/vector-icons';
-import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
+import { Menu, MenuOption, MenuOptions, MenuTrigger } from 'react-native-popup-menu';
 import uuid from 'react-native-uuid';
-import {deletingChat} from '../utils/actions/chatActions';
+import colors from '../constants/colors';
+import { deletingChat } from '../utils/actions/chatActions';
+import ProfileImage from './ProfileImage';
 
 
 const imageSize = 40;
 
 const MenuItem = props => {
 
-    const Icon = props.iconPack ?? Feather; // default to Feather if no iconPack was passed
+    const Icon = props.iconPack ?? Feather;
 
     return <MenuOption onSelect={props.onSelect}>
         <View style={styles.menuItemContainer}>

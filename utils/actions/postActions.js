@@ -2,7 +2,7 @@ import { child, getDatabase, onValue, push, ref } from "firebase/database";
 import uuid from 'react-native-uuid';
 import { getFirebaseApp } from "../firebaseHelper";
 
-export const createPost = async (loggedInUserId, postText) => {
+export const createPost = async (loggedInUserId, postText, image, document) => {
     
     const newPostData = {
         createdBy: loggedInUserId,
@@ -11,6 +11,8 @@ export const createPost = async (loggedInUserId, postText) => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         invitationCode: generateInvitationLink(),
+        imageUrl: image,
+        docUrl: document,
     };
 
     const app = getFirebaseApp();

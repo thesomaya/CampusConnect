@@ -18,6 +18,7 @@ import CoursesScreen from "../screens/CoursesScreen";
 import DataListScreen from "../screens/DataListScreen";
 import JoinChatScreen from "../screens/JoinChatScreen";
 import NewChatScreen from "../screens/NewChatScreen";
+import PostDetails from "../screens/PostDetails";
 import SettingsScreen from "../screens/SettingsScreen";
 import Timeline from "../screens/Timeline";
 import { setChatsData } from "../store/chatSlice";
@@ -129,6 +130,12 @@ const StackNavigator = () => {
         <Stack.Screen
           name="NewChat"
           component={NewChatScreen}
+        />
+      </Stack.Group>
+      <Stack.Group screenOptions={{ presentation: 'containedModal' }}>
+        <Stack.Screen
+          name="PostDetails"
+          component={PostDetails}
         />
       </Stack.Group>
       
