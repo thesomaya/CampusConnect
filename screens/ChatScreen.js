@@ -1,20 +1,20 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import {View,StyleSheet,ImageBackground,TextInput,TouchableOpacity,FlatList,Image,ActivityIndicator} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import backgroundImage from "../assets/images/chatbackground.png";
-import colors from "../constants/colors";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { ActivityIndicator, FlatList, Image, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import ActionSheet from 'react-native-action-sheet';
-import { useSelector } from "react-redux";
-import PageContainer from "../components/PageContainer";
-import Bubble from "../components/Bubble";
-import { createChat, sendImage, sendDocument, sendTextMessage } from "../utils/actions/chatActions";
-import ReplyTo from "../components/ReplyTo";
-import { launchImagePicker, openCamera, uploadImageAsync } from "../utils/imagePickerHelper";
 import AwesomeAlert from 'react-native-awesome-alerts';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
+import { useSelector } from "react-redux";
+import backgroundImage from "../assets/images/chatbackground.png";
+import Bubble from "../components/Bubble";
 import CustomHeaderButton from "../components/CustomHeaderButton";
-import { launchDocumentPicker, uploadDocumentAsync } from '../utils/launchDocumentPicker'; 
+import PageContainer from "../components/PageContainer";
+import ReplyTo from "../components/ReplyTo";
+import colors from "../constants/colors";
+import { createChat, isUserInChat, sendDocument, sendImage, sendTextMessage } from "../utils/actions/chatActions";
+import { launchImagePicker, openCamera, uploadImageAsync } from "../utils/imagePickerHelper";
+import { launchDocumentPicker, uploadDocumentAsync } from '../utils/launchDocumentPicker';
 
 const ChatScreen = (props) => {
   const [chatUsers, setChatUsers] = useState([]);
@@ -25,7 +25,9 @@ const ChatScreen = (props) => {
   const [tempImageUri, setTempImageUri] = useState("");
   const [tempDocUri, setTempDocUri] = useState("");
   const [tempDocName, setTempDocName] = useState("");
+  const [inChat, setInChat] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
   const options = ['Cancel', 'Photos', 'Document', 'Contact', 'Location', 'Poll'];
   const cancelButtonIndex = 0;
 
@@ -68,6 +70,7 @@ const ChatScreen = (props) => {
           break;
       }
     };
+
 
   const chatMessages = useSelector(state => {
     if (!chatId) return [];
@@ -121,19 +124,33 @@ const ChatScreen = (props) => {
     setChatUsers(chatData.users)
   }, [chatUsers])
 
+  useEffect( () =>  {
+    const checkUser = async () => {
+      setIsCreatingChat(true);
+      const response = await isUserInChat(userData.userId, chatId);
+      setInChat(response);
+      setIsCreatingChat(false);
+
+    }
+    checkUser();
+    
+  }, [chatUsers, chatId])
+
   const sendMessage = useCallback(async () => {
 
     try {
       let id = chatId;
       if (!id) {
+        setIsCreatingChat(true);
         id = await createChat(userData.userId, props.route.params.newChatData);
         setChatId(id);
+        setIsCreatingChat(false);
       }
 
       await sendTextMessage(id, userData, messageText, replyingTo && replyingTo.key, chatUsers);
-
       setMessageText("");
       setReplyingTo(null);
+
     } catch (error) {
       console.log(error);
       console.log(error.message);
@@ -314,6 +331,8 @@ const ChatScreen = (props) => {
 
         </ImageBackground>
 
+        { ((chatId && inChat ) || !chatId || isCreatingChat)  &&
+        
         <View style={styles.inputContainer}>
           <TouchableOpacity
             style={styles.mediaButton}
@@ -407,6 +426,13 @@ const ChatScreen = (props) => {
 
 
         </View>
+      }
+      {
+        (chatId && !inChat && !isCreatingChat) &&
+        <View style={styles.textContainer}>
+          <Text style = {styles.text}>You can't send messages.</Text>
+        </View>
+      }
     </SafeAreaView>
   );
 };
@@ -427,6 +453,10 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 10,
     height: 50,
+  },
+  textContainer: {
+    flexDirection: "row",
+    justifyContent: 'center',
   },
   textbox: {
     flex: 1,
@@ -450,6 +480,12 @@ const styles = StyleSheet.create({
     fontFamily: 'medium',
     letterSpacing: 0.3,
     color: colors.textColor
+  },
+  text: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+    fontFamily: 'medium',
   }
 });
 

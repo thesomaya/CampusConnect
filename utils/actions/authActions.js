@@ -1,11 +1,11 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import { getFirebaseApp } from '../firebaseHelper';
 import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { child, get, getDatabase, ref, set, update } from 'firebase/database';
-import { authenticate, logout } from '../../store/authSlice';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getUserData } from './userActions';
+import { authenticate, logout } from '../../store/authSlice.js';
+import { getFirebaseApp } from '../firebaseHelper.js';
+import { getUserData } from './userActions.js';
 
 let timer;
 
@@ -204,3 +204,12 @@ export const getUserPushTokens = async (userId) => {
         console.log(error);
     }
 }
+export const checkLoggedInStatus = async () => {
+    try {
+        const userData = await AsyncStorage.getItem('userData');
+        return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};

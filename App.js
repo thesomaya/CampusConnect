@@ -1,14 +1,13 @@
-import 'react-native-gesture-handler';
-import { StyleSheet, Text, LogBox } from "react-native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useState } from "react";
-import * as Font from 'expo-font';
-import AppNavigator from './navigation/AppNavigator';
-import {Provider} from 'react-redux';
-import { store } from './store/store';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LogBox, StyleSheet } from "react-native";
+import 'react-native-gesture-handler';
 import { MenuProvider } from "react-native-popup-menu";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Provider } from 'react-redux';
+import AppNavigator from './navigation/AppNavigator';
+import { store } from './store/store';
 
 //AsyncStorage.clear(); // force logging out
 SplashScreen.preventAutoHideAsync();

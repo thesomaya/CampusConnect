@@ -56,10 +56,22 @@ const ChatSettingsScreen = (props) => {
   const handleGroupItemPress = async (user) => {
     setSelectedUser(user);
     setShowUserPreview(true);
-    const isGroupAdmin = await isAdmin(user, chatData);
-    setIsAdminUser(isGroupAdmin);
-
+    await checkAdminStatus(user, chatData);
   };
+  useEffect(() => {
+    const handleAdminStatuses = async () => {
+      const admins = {};
+      for (const uid of chatData.users) {
+        admins[uid] = await isAdmin(storedUsers[uid], chatData);
+      }
+      setUserAdmins(admins);
+    };
+  
+    if (chatData.users.length) {
+      handleAdminStatuses();
+    }
+  }, [chatData.users, storedUsers]);
+  
   const handleGroupItemClose= () => {
     setSelectedUser(null);
     setShowUserPreview(false);
@@ -95,7 +107,7 @@ const ChatSettingsScreen = (props) => {
   );
 
   const shareInvitationLink = () => {
-    return `https://campusconnect.com/join-chat/${chatData.invitationCode}`;
+    return `https://192.168.1.143/join-chat/${chatData.invitationCode}`;
   };
   const invitationLink = shareInvitationLink();
 
@@ -142,6 +154,12 @@ const ChatSettingsScreen = (props) => {
       setIsLoading(false);
     }
   }, [props.navigation, isLoading]);
+
+  const checkAdminStatus = async (user, chatData) => {
+    const isUserAdmin = await isAdmin(user, chatData);
+    setIsAdminUser(isUserAdmin);
+  }
+  
 
   if (!chatData.users) return null;
 
@@ -192,6 +210,19 @@ const ChatSettingsScreen = (props) => {
           </Text>
         </View>
 
+        <GroupItem
+          type={"link"}
+          title="Starred messages"
+          hideImage={true}
+          onPress={() =>
+            props.navigation.navigate("DataList", {
+              title: "Starred messages",
+              data: Object.values(starredMessages),
+              type: "messages",
+            })
+          }
+        />
+
         <View style={styles.sectionContainer}>
           <Text style={styles.heading}>
             {chatData.users.length} Participants
@@ -210,16 +241,13 @@ const ChatSettingsScreen = (props) => {
             }
           />
 
-          {chatData.users.slice(0, 4).map( (uid) => {
+          {chatData.users.map( (uid) => {
             const currentUser = storedUsers[uid];
             const handleAdminStatus = async (currentUser) => {
               const adminValue = await isAdmin(currentUser, chatData);
               setUserAdmins((prevAdmins) => ({ ...prevAdmins, [uid]: adminValue }));
             };
           
-            useEffect(() => {
-              handleAdminStatus(storedUsers[uid]);
-            }, [uid]);
           
             const currentAdmin = userAdmins[uid];
             return (
@@ -260,36 +288,9 @@ const ChatSettingsScreen = (props) => {
             );
           })}
 
-          {chatData.users.length > 4 && (
-            <GroupItem
-              type={"link"}
-              title="View all"
-              hideImage={true}
-              onPress={() =>
-                props.navigation.navigate("DataList", {
-                  title: "Participants",
-                  data: chatData.users,
-                  type: "users",
-                  chatId,
-                  chatData,
-                })
-              }
-            />
-          )}
         </View>
 
-        <GroupItem
-          type={"link"}
-          title="Starred messages"
-          hideImage={true}
-          onPress={() =>
-            props.navigation.navigate("DataList", {
-              title: "Starred messages",
-              data: Object.values(starredMessages),
-              type: "messages",
-            })
-          }
-        />
+        
       </ScrollView>
 
       {
@@ -317,6 +318,9 @@ const styles = StyleSheet.create({
   sectionContainer: {
     width: "100%",
     marginTop: 10,
+    borderBottomWidth: 0.5,
+    paddingBottom: 5,
+    borderColor: colors.extraLightGrey,
   },
   heading: {
     marginVertical: 8,
@@ -329,6 +333,7 @@ const styles = StyleSheet.create({
     fontFamily: "regular",
     letterSpacing: 0.3,
     textDecorationLine: "underline",
+    marginBottom: 5,
   },
 });
 

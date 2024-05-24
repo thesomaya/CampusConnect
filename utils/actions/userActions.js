@@ -1,5 +1,5 @@
-import { child, endAt, get, getDatabase, orderByChild, push, query, ref, remove, startAt } from "firebase/database"
-import { getFirebaseApp } from "../firebaseHelper";
+import { child, endAt, get, getDatabase, orderByChild, push, query, ref, remove, startAt } from "firebase/database";
+import { getFirebaseApp } from "../firebaseHelper.js";
 
 export const getUserData = async (userId) => {
     try {
@@ -31,6 +31,9 @@ export const deleteUserChat = async (userId, chatId) => {
     try {
         const app = getFirebaseApp();
         const dbRef = ref(getDatabase(app));
+
+        const messagesRef = child(dbRef, `userMessages/${userId}/${chatId}`);
+        await remove(messagesRef);
         
         // Retrieve the unique key associated with the chatId
         const userChatsRef = child(dbRef, `userChats/${userId}`);

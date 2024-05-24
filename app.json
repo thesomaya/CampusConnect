@@ -16,16 +16,21 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "org.reactjs.native.example.campusconnect"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.somaia.mohamed.campusconnect"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "notification": {
+      "sound": "./local/assets/notification-sound.wav"
     },
     "plugins": [
       [

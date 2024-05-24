@@ -1,7 +1,10 @@
 Priorities: 
 - block 
 - inviting link 
-- announcement page 
+- announcement page delete and edit posts
+
+- delete message for me / for all 
+- chat and group deletion only for the person
 
 Features to implement:
 - page not rendering when deleting a chat  

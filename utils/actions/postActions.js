@@ -2,11 +2,12 @@ import { child, getDatabase, onValue, push, ref } from "firebase/database";
 import uuid from 'react-native-uuid';
 import { getFirebaseApp } from "../firebaseHelper";
 
-export const createPost = async (loggedInUserId, postText, image, document) => {
+export const createPost = async (loggedInUserId, postTitle, postText, image, document) => {
     
     const newPostData = {
         createdBy: loggedInUserId,
         updatedBy: loggedInUserId,
+        title: postTitle,
         text: postText,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

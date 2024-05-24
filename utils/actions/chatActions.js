@@ -1,8 +1,8 @@
 import { child, get, getDatabase, push, ref, remove, set, update } from "firebase/database";
 import uuid from 'react-native-uuid';
-import { getFirebaseApp } from "../firebaseHelper";
-import { getUserPushTokens } from "./authActions";
-import { addUserChat, deleteUserChat, getUserChats } from "./userActions";
+import { getFirebaseApp } from "../firebaseHelper.js";
+import { getUserPushTokens } from "./authActions.js";
+import { addUserChat, deleteUserChat, getUserChats } from "./userActions.js";
 
 export const createChat = async (loggedInUserId, chatData) => {
     
@@ -91,7 +91,9 @@ const sendMessage = async (chatId, senderId, messageText, imageUrl, documentUrl,
         messageData.type = type;
     }
 
-    await push(messagesRef, messageData);
+    const newMessageRef = await push(messagesRef, messageData);
+    const messageId = newMessageRef.key;
+    console.log("the message id ", messageId);
 
     const chatRef = child(dbRef, `chats/${chatId}`);
     await update(chatRef, {
@@ -99,6 +101,21 @@ const sendMessage = async (chatId, senderId, messageText, imageUrl, documentUrl,
         updatedAt: new Date().toISOString(),
         latestMessageText: messageText
     });
+
+    const chatSnapshot = await get(chatRef);
+    try {
+        if (chatSnapshot) {
+            const chatData = chatSnapshot.val();
+            const chatMembers = chatData.users;
+    
+        for (const userId of chatMembers) {
+            await update(child(dbRef, `userMessages/${userId}/${chatId}`), {[messageId]:true});
+        }
+        }
+    } catch (error) {
+        console.log(error);
+    }
+    
 }
 
 export const starMessage = async (messageId, chatId, userId) => {
@@ -149,6 +166,22 @@ export const deleteMessage = async (chatId, messageId) => {
                 updatedAt: new Date().toISOString(),
             });
         }
+
+        return true;
+    } catch (error) {
+        console.error('Error deleting message:', error);
+        return false;
+    }
+};
+
+export const deleteMessageforUser = async (userId, chatId, messageId) => {
+    console.log("userId: ", userId, " chatid: ", chatId, " message id : ", messageId);
+    try {
+        const app = getFirebaseApp();
+        const dbRef = ref(getDatabase(app));
+        const messageRef = child(dbRef, `userMessages/${userId}/${chatId}/${messageId}`);
+
+        await remove(messageRef);
 
         return true;
     } catch (error) {
@@ -311,4 +344,68 @@ export const isAdmin = async (userData, chatData) => {
     }
     
 }
+
+export const isUserInChat = async (userId, chatId) => {
+    if(!chatId) return;
+    
+    try {
+        const app = getFirebaseApp();
+        const dbRef = ref(getDatabase(app));
+        const chatsRef = child(dbRef, `chats/${chatId}`);
+        const chatSnapshot = await get(chatsRef);
+
+        const chatDataFromDB = chatSnapshot.val();
+        const inChat = chatDataFromDB.users.includes(userId);
+        return inChat;
+    } catch (error) {
+        console.error('Error checking user in chat:', error);
+    }
+};
+
+export const isUserInGroup = async (userId, invitationLink) => {
+    try {
+        const app = getFirebaseApp();
+        const dbRef = ref(getDatabase(app));
+        const chatsRef = child(dbRef, 'chats');
+        const chatSnapshot = await get(chatsRef);
+
+        if (chatSnapshot.exists()) {
+            const chatsData = chatSnapshot.val();
+            const chatId = Object.keys(chatsData).find(chatId => chatsData[chatId].invitationCode === invitationLink);
+
+            if (chatId) {
+                const chatUsers = chatsData[chatId].users;
+                const isInChat = chatUsers.includes(userId);
+                return { isInChat, chatId };
+            } else {
+                return { isInChat: false, chatId: null };
+            }
+        } 
+    } catch (error) {
+        console.error('Error checking user in chat:', error);
+        return { isInChat: false, chatId: null };
+    }
+};
+
+export const fetchUserMessages = async (userId, chatId) => {
+    try {
+        const app = getFirebaseApp();
+        const dbRef = ref(getDatabase(app));
+        const userMessagesRef = child(dbRef, `userMessages/${userId}/${chatId}`);
+        
+        const snapshot = await get(userMessagesRef);
+
+        if (snapshot.exists()) {
+            return snapshot.val();
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error("Error fetching user messages:", error);
+        return null;
+    }
+};
+
+
+
 

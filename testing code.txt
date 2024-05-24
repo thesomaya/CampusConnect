@@ -1,0 +1,24 @@
+const messagesRef = child(dbRef, `messages/${chatId}`);
+        const userMessagesRef = child(dbRef, `userMessages/${userData.userId}/${chatId}`);
+
+        refs.push(messagesRef);
+        refs.push(userMessagesRef);
+
+        onValue(messagesRef, messagesSnapshot => {
+          const messagesData = messagesSnapshot.val();
+        
+          onValue(userMessagesRef, userMessagesSnapshot => {
+            const userMessagesData = userMessagesSnapshot.val();
+        
+            if (messagesData && userMessagesData) {
+              const filteredMessages = Object.keys(userMessagesData).reduce((acc, messageId) => {
+                const message = messagesData[messageId];
+                if (message) { // Check if message exists (avoid undefined)
+                  acc.push(message); // Add message to filtered array
+                }
+                return acc;
+              }, []);        
+              dispatch(setChatMessages({ chatId, messagesData: filteredMessages }));
+            }
+          });
+        });

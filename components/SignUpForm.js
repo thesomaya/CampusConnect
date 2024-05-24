@@ -1,30 +1,37 @@
 import React, { useState } from 'react';
-import { View, Text } from 'react-native';
-import { Picker } from "@react-native-picker/picker";
+import { StyleSheet, Text, View } from 'react-native';
+import CustomDropdown from './CustomDropDown.js';
 import SignUpFaculty from './SignUpFaculty';
 import SignUpStudent from './SignUpStudent';
 
 const SignUpForm = () => {
-  const [selectedRole, setSelectedRole] = useState("student");
-
-  const PickerChangedHandler = itemValue => {
-    setSelectedRole(itemValue);
-  }
+  const [selectedRole, setSelectedRole] = useState('student');
 
   return (
-    <View>
-      <Text style={{ marginTop: -50, fontFamily: "bold", fontSize: 14 }}>Select your role</Text>
-      <Picker
-        itemStyle={{ fontFamily: "regular", fontSize: 14, marginTop: -60, marginBottom: -40 }}
+    <View style={styles.container}>
+      <Text style={styles.label}>Select your role</Text>
+      <CustomDropdown
+        items={[
+          { label: 'Student', value: 'student' },
+          { label: 'Faculty Member', value: 'facultyMember' },
+        ]}
         selectedValue={selectedRole}
-        onValueChange={(itemValue) => PickerChangedHandler(itemValue)}>
-        <Picker.Item label="Student" value="student" />
-        <Picker.Item label="Faculty Member" value="facultyMember" />
-      </Picker>
-
-      {selectedRole === "student" ? <SignUpStudent /> : <SignUpFaculty />}
+        onValueChange={setSelectedRole}
+      />
+      {selectedRole === 'student' ? <SignUpStudent /> : <SignUpFaculty />}
     </View>
-  )
+  );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+  },
+  label: {
+    marginBottom: 10,
+    fontFamily: 'bold',
+    fontSize: 14,
+  },
+});
 
 export default SignUpForm;

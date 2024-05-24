@@ -1,14 +1,13 @@
-import React, { useRef } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-import colors from '../constants/colors';
-import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
-import uuid from 'react-native-uuid';
+import { AntDesign, Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
-import { Feather, FontAwesome, AntDesign, Ionicons } from '@expo/vector-icons';
-import { starMessage, deleteMessage } from '../utils/actions/chatActions';
+import React, { useRef } from 'react';
+import { Image, Linking, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Menu, MenuOption, MenuOptions, MenuTrigger } from 'react-native-popup-menu';
+import uuid from 'react-native-uuid';
 import { useSelector } from 'react-redux';
-import { Linking } from 'react-native';
-import { openPDF, openWord, openPowerPoint } from '../utils/openFiles';
+import colors from '../constants/colors';
+import { deleteMessageforUser, starMessage } from '../utils/actions/chatActions';
+import { openPDF, openPowerPoint, openWord } from '../utils/openFiles';
 
 function formatTime(dateString) {
     const date = new Date(dateString);
@@ -203,7 +202,7 @@ const Bubble = props => {
                         <MenuItem text={ `${isStarred ? "Unstar" : "Star" } message` } icon={ isStarred ? 'star' : 'star-o'} iconPack={FontAwesome} onSelect={() => starMessage(messageId,chatId,userId)} />
                         <MenuItem text= "Reply" icon="arrow-undo-outline" iconPack={Ionicons} onSelect={setReply} />
                         { type==="myMessage" && (
-                            <MenuItem text= "Delete" icon="delete" iconPack={AntDesign} onSelect={() =>  deleteMessage(chatId, messageId)} />
+                            <MenuItem text= "Delete" icon="delete" iconPack={AntDesign} onSelect={() =>  deleteMessageforUser(userId, chatId, messageId)} />
                         )}
                     </MenuOptions>
                 </Menu>

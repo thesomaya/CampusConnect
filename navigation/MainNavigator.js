@@ -1,12 +1,17 @@
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { StackActions, useNavigation } from '@react-navigation/native';
+import { StackActions, useNavigation } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
 import { child, get, getDatabase, off, onValue, ref } from "firebase/database";
 import React, { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, View } from "react-native";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  View,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import colors from "../constants/colors";
 import commonStyles from "../constants/commonStyles";
@@ -30,14 +35,14 @@ import { getFirebaseApp } from "../utils/firebaseHelper";
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-
 const TabNavigator = () => {
-
   return (
-    <Tab.Navigator screenOptions={{
-      headerTitle: "",
-      headerShadowVisible: false  
-    }}>
+    <Tab.Navigator
+      screenOptions={{
+        headerTitle: "",
+        headerShadowVisible: false,
+      }}
+    >
       <Tab.Screen
         name="Timeline"
         component={Timeline}
@@ -64,7 +69,8 @@ const TabNavigator = () => {
         options={{
           tabBarLabel: "Courses",
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome5 name="layer-group" size={size} color={color} />          ),
+            <FontAwesome5 name="layer-group" size={size} color={color} />
+          ),
         }}
       />
       <Tab.Screen
@@ -104,7 +110,7 @@ const StackNavigator = () => {
           options={{
             headerTitle: "",
             headerBackTitle: "Back",
-            headerShadowVisible: false
+            headerShadowVisible: false,
           }}
         />
         <Stack.Screen
@@ -126,60 +132,57 @@ const StackNavigator = () => {
         <Stack.Screen name="JoinChat" component={JoinChatScreen} />
       </Stack.Group>
 
-      <Stack.Group screenOptions={{ presentation: 'containedModal' }}>
-        <Stack.Screen
-          name="NewChat"
-          component={NewChatScreen}
-        />
+      <Stack.Group screenOptions={{ presentation: "containedModal" }}>
+        <Stack.Screen name="NewChat" component={NewChatScreen} />
       </Stack.Group>
-      <Stack.Group screenOptions={{ presentation: 'containedModal' }}>
-        <Stack.Screen
-          name="PostDetails"
-          component={PostDetails}
-        />
+      <Stack.Group screenOptions={{ presentation: "containedModal" }}>
+        <Stack.Screen name="PostDetails" component={PostDetails} />
       </Stack.Group>
-      
     </Stack.Navigator>
-  )
-}
+  );
+};
 
 const MainNavigator = (props) => {
-
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
   const [isLoading, setIsLoading] = useState(true);
 
-  const userData = useSelector(state => state.auth.userData);
-  const storedUsers = useSelector(state => state.users.storedUsers);
-  const posts = useSelector(state => state.posts);
+  const userData = useSelector((state) => state.auth.userData);
+  const storedUsers = useSelector((state) => state.users.storedUsers);
+  const posts = useSelector((state) => state.posts);
 
-  const [expoPushToken, setExpoPushToken] = useState('');
+  const [expoPushToken, setExpoPushToken] = useState("");
   const notificationListener = useRef();
   const responseListener = useRef();
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+    registerForPushNotificationsAsync().then((token) =>
+      setExpoPushToken(token)
+    );
 
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      // Handle received notification
-    });
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
+        // Handle received notification
+      });
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      const { data } = response.notification.request.content;
-      const chatId = data["chatId"];
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        const { data } = response.notification.request.content;
+        const chatId = data["chatId"];
 
-      if (chatId) {
-        const pushAction = StackActions.push("ChatScreen", { chatId });
-        navigation.dispatch(pushAction);
-      }
-      else {
-        console.log("No chat id sent with notification");
-      }
-    });
+        if (chatId) {
+          const pushAction = StackActions.push("ChatScreen", { chatId });
+          navigation.dispatch(pushAction);
+        } else {
+          console.log("No chat id sent with notification");
+        }
+      });
 
     return () => {
-      Notifications.removeNotificationSubscription(notificationListener.current);
+      Notifications.removeNotificationSubscription(
+        notificationListener.current
+      );
       Notifications.removeNotificationSubscription(responseListener.current);
     };
   }, []);
@@ -206,30 +209,28 @@ const MainNavigator = (props) => {
 
         onValue(chatRef, (chatSnapshot) => {
           chatsFoundCount++;
-          
+
           const data = chatSnapshot.val();
 
           if (data) {
-
             if (!data.users.includes(userData.userId)) {
               return;
             }
 
             data.key = chatSnapshot.key;
 
-            data.users.forEach(userId => {
+            data.users.forEach((userId) => {
               if (storedUsers[userId]) return;
 
               const userRef = child(dbRef, `users/${userId}`);
 
-              get(userRef)
-              .then(userSnapshot => {
+              get(userRef).then((userSnapshot) => {
                 const userSnapshotData = userSnapshot.val();
-                dispatch(setStoredUsers({ newUsers: { userSnapshotData } }))
-              })
+                dispatch(setStoredUsers({ newUsers: { userSnapshotData } }));
+              });
 
               refs.push(userRef);
-            })
+            });
 
             chatsData[chatSnapshot.key] = data;
           }
@@ -238,55 +239,87 @@ const MainNavigator = (props) => {
             dispatch(setChatsData({ chatsData }));
             setIsLoading(false);
           }
-        })
+        });
+
+        // const messagesRef = child(dbRef, `messages/${chatId}`);
+        // refs.push(messagesRef);
+
+        // onValue(messagesRef, messagesSnapshot => {
+        //   const messagesData = messagesSnapshot.val();
+        //   dispatch(setChatMessages({ chatId, messagesData }));
+        // })
 
         const messagesRef = child(dbRef, `messages/${chatId}`);
-        refs.push(messagesRef);
+        const userMessagesRef = child(
+          dbRef,
+          `userMessages/${userData.userId}/${chatId}`
+        );
 
-        onValue(messagesRef, messagesSnapshot => {
+        refs.push(messagesRef);
+        refs.push(userMessagesRef);
+
+        onValue(messagesRef, (messagesSnapshot) => {
           const messagesData = messagesSnapshot.val();
-          dispatch(setChatMessages({ chatId, messagesData }));
-        })
+
+          onValue(userMessagesRef, (userMessagesSnapshot) => {
+            const userMessagesData = userMessagesSnapshot.val();
+
+            if (messagesData && userMessagesData) {
+              const filteredMessages = Object.entries(messagesData)
+                .filter(([key, message]) =>
+                  userMessagesData.hasOwnProperty(key)
+                )
+                .map(([key, message]) => ({ ...message, key }));
+              console.log("messagesData", messagesData);
+              console.log("userMessagesData", userMessagesData);
+              console.log("filteredMessages", filteredMessages);
+              dispatch(
+                setChatMessages({ chatId, messagesData: filteredMessages })
+              );
+            }
+          });
+        });
 
         if (chatsFoundCount == 0) {
           setIsLoading(false);
         }
       }
+    });
 
-    })
-
-    const userStarredMessagesRef = child(dbRef, `userStarredMessages/${userData.userId}`);
+    const userStarredMessagesRef = child(
+      dbRef,
+      `userStarredMessages/${userData.userId}`
+    );
     refs.push(userStarredMessagesRef);
-    onValue(userStarredMessagesRef, querySnapshot => {
+    onValue(userStarredMessagesRef, (querySnapshot) => {
       const starredMessages = querySnapshot.val() ?? {};
       dispatch(setStarredMessages({ starredMessages }));
-    })
+    });
 
     const postsRef = child(dbRef, `posts`);
     refs.push(postsRef);
-    onValue(postsRef, querySnapshot => {
+    onValue(postsRef, (querySnapshot) => {
       const postsData = querySnapshot.val() ?? {};
       dispatch(setPostsData({ postsData }));
-    })
+    });
 
     return () => {
       console.log("Unsubscribing firebase listeners");
-      refs.forEach(ref => off(ref));
-    }
-
+      refs.forEach((ref) => off(ref));
+    };
   }, []);
 
   if (isLoading) {
     <View style={commonStyles.center}>
-      <ActivityIndicator size={'large'} color={colors.primary} />
-    </View>
+      <ActivityIndicator size={"large"} color={colors.primary} />
+    </View>;
   }
-
 
   return (
     <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={ Platform.OS === "ios" ? "padding" : undefined}>
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <StackNavigator />
     </KeyboardAvoidingView>
   );
@@ -297,29 +330,34 @@ export default MainNavigator;
 async function registerForPushNotificationsAsync() {
   let token;
 
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
+  if (Platform.OS === "android") {
+    await Notifications.setNotificationChannelAsync("default", {
+      name: "default",
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
+      lightColor: "#FF231F7C",
     });
   }
 
   if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
+    if (existingStatus !== "granted") {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
-    if (finalStatus !== 'granted') {
-      alert('Failed to get push token for push notification!');
+    if (finalStatus !== "granted") {
+      alert("Failed to get push token for push notification!");
       return;
     }
-    token = (await Notifications.getExpoPushTokenAsync({ projectId: 'da67a7c4-0e66-45f1-b97e-f8d5d8f340c4' })).data;
+    token = (
+      await Notifications.getExpoPushTokenAsync({
+        projectId: "da67a7c4-0e66-45f1-b97e-f8d5d8f340c4",
+      })
+    ).data;
   } else {
-    console.log('Must use physical device for Push Notifications');
+    console.log("Must use physical device for Push Notifications");
   }
 
   return token;

@@ -26,7 +26,7 @@ const CourseItem = ({ title, subTitle, creatorName, lecturer, image, onPress }) 
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 0,
     paddingVertical: 4,
     borderColor: colors.grey,
   },

@@ -19,10 +19,11 @@ const DataListScreen = props => {
     const [userAdmins, setUserAdmins] = useState({}); // State for user admin status
     const [isAdminUser, setIsAdminUser] = useState();
 
-    const storedUsers = useSelector(state => state.users.storedUsers);
+    //const storedUsers = useSelector(state => state.users.storedUsers);
     const userData = useSelector(state => state.auth.userData);
     const messagesData = useSelector(state => state.messages.messagesData);
-    
+    const storedUsers = useSelector((state) => state.users.storedUsers, { reselectOnFocus: true });
+
     const { title, data, type, chatId, chatData } = props.route.params;
 
     const handleGroupItemPress = async (user) => {
@@ -128,6 +129,7 @@ const DataListScreen = props => {
                 data={data}
                 keyExtractor={(item, index) => item.messageId || index.toString()}
                 renderItem={renderListItem}
+                removeClippedSubviews={true}
             />
             {   
                 showUserPreview && selectedUser &&  selectedUser.userId !== userData.userId && (

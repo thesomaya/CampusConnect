@@ -1,8 +1,9 @@
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import React, { useRef } from 'react';
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
-import { Menu, MenuOption, MenuOptions, MenuTrigger } from 'react-native-popup-menu';
+import { MenuOption } from 'react-native-popup-menu';
 import uuid from 'react-native-uuid';
+import { useDispatch } from 'react-redux';
 import colors from '../constants/colors';
 import { deletingChat } from '../utils/actions/chatActions';
 import ProfileImage from './ProfileImage';
@@ -27,18 +28,24 @@ const DataItem = props => {
     const hideImage = props.hideImage && props.hideImage === true;
     const menuRef = useRef(null);
     const id = useRef(uuid.v4());
+    const dispatch = useDispatch();
+
+    const deleteChat = async (chatId) => {
+        await deletingChat(chatId);
+        dispatch(setChatsData(updatedChats));
+    };
 
     return (
-        <TouchableWithoutFeedback 
+        <TouchableWithoutFeedback
         onPress={props.onPress}
-        onLongPress={() => (props.type !== "checkbox" && menuRef.current.props.ctx.menuActions.openMenu(id.current))}
-        style={{ width: '100%' }}        
+        //onLongPress={() => (props.type !== "checkbox" && menuRef.current.props.ctx.menuActions.openMenu(id.current))}
+        style={{ width: '100%' }}
         >
             <View style={styles.container}>
 
                 {
                     !icon && !hideImage &&
-                    <ProfileImage 
+                    <ProfileImage
                         uri={image}
                         size={imageSize}
                     />
@@ -87,13 +94,13 @@ const DataItem = props => {
                 }
                 
                 {
-                type !== "checkbox" &&
-                <Menu name={id.current} ref={menuRef}>
-                    <MenuTrigger />
-                    <MenuOptions>
-                        <MenuItem text='Delete' icon={'delete'} iconPack={AntDesign} onSelect={() => deletingChat(chatId)} />
-                    </MenuOptions>
-                </Menu> 
+                //type !== "checkbox" &&
+                // <Menu name={id.current} ref={menuRef}>
+                //     <MenuTrigger />
+                //     <MenuOptions>
+                //         <MenuItem text='Delete' icon={'delete'} iconPack={AntDesign} onSelect={() => deleteChat(chatId)} />
+                //     </MenuOptions>
+                // </Menu> 
                 }
             </View>
         </TouchableWithoutFeedback>
