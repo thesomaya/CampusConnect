@@ -197,13 +197,15 @@ const MainNavigator = (props) => {
 
     onValue(userChatsRef, (querySnapshot) => {
       const chatIdsData = querySnapshot.val() || {};
-      const chatIds = Object.values(chatIdsData);
+      const chatIds = Object.keys(chatIdsData);
 
       const chatsData = {};
       let chatsFoundCount = 0;
 
       for (let i = 0; i < chatIds.length; i++) {
         const chatId = chatIds[i];
+        const isValid = chatIdsData[chatId] === true;
+
         const chatRef = child(dbRef, `chats/${chatId}`);
         refs.push(chatRef);
 
@@ -233,6 +235,7 @@ const MainNavigator = (props) => {
             });
 
             chatsData[chatSnapshot.key] = data;
+            chatsData[chatSnapshot.key].isValid = chatIdsData[chatId];
           }
 
           if (chatsFoundCount >= chatIds.length) {
@@ -241,44 +244,26 @@ const MainNavigator = (props) => {
           }
         });
 
-        // const messagesRef = child(dbRef, `messages/${chatId}`);
-        // refs.push(messagesRef);
-
-        // onValue(messagesRef, messagesSnapshot => {
-        //   const messagesData = messagesSnapshot.val();
-        //   dispatch(setChatMessages({ chatId, messagesData }));
-        // })
-
         const messagesRef = child(dbRef, `messages/${chatId}`);
-        const userMessagesRef = child(
-          dbRef,
-          `userMessages/${userData.userId}/${chatId}`
-        );
-
+        const userMessagesRef = child(dbRef,`userMessages/${userData.userId}/${chatId}`);
         refs.push(messagesRef);
         refs.push(userMessagesRef);
 
-        onValue(messagesRef, (messagesSnapshot) => {
-          const messagesData = messagesSnapshot.val();
+        onValue(userMessagesRef, (userMessagesSnapshot) => {
+          const messageIdsData = userMessagesSnapshot.val() || {};
 
-          onValue(userMessagesRef, (userMessagesSnapshot) => {
-            const userMessagesData = userMessagesSnapshot.val();
+          onValue (messagesRef, messagesSnapshot => {
+            const messagesData = messagesSnapshot.val() || {};
+            const messageIds = Object.keys(messageIdsData);
 
-            if (messagesData && userMessagesData) {
-              const filteredMessages = Object.entries(messagesData)
-                .filter(([key, message]) =>
-                  userMessagesData.hasOwnProperty(key)
-                )
-                .map(([key, message]) => ({ ...message, key }));
-              console.log("messagesData", messagesData);
-              console.log("userMessagesData", userMessagesData);
-              console.log("filteredMessages", filteredMessages);
-              dispatch(
-                setChatMessages({ chatId, messagesData: filteredMessages })
-              );
-            }
+          for (let i = 0; i < messageIds.length; i++) {
+            const messageId = messageIds[i];
+            messagesData[messageId].isValid = messageIdsData[messageId];
+          }
+            dispatch(setChatMessages({ chatId, messagesData }));
+          
           });
-        });
+      });
 
         if (chatsFoundCount == 0) {
           setIsLoading(false);

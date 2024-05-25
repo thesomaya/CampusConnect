@@ -1,11 +1,11 @@
 import { AntDesign } from '@expo/vector-icons';
 import React, { useCallback, useEffect } from "react";
 import {
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import "react-native-gesture-handler";
 import { Swipeable } from "react-native-gesture-handler";
@@ -16,8 +16,7 @@ import DataItem from "../components/DataItem";
 import PageContainer from "../components/PageContainer";
 import PageTitle from "../components/PageTitle";
 import colors from "../constants/colors";
-import { deleteChat } from '../store/chatSlice';
-import { deleteUserChat } from "../utils/actions/userActions";
+import { deleteUserChat } from "../utils/actions/chatActions";
 
 const ChatListScreen = (props) => {
   const dispatch = useDispatch();
@@ -84,7 +83,7 @@ const ChatListScreen = (props) => {
   const handleDeleteChat = useCallback(async (chatId) => {
     if (chatId) {
       await deleteUserChat(userData.userId, chatId);
-      dispatch(deleteChat(chatId));
+      //dispatch(deleteChat(chatId));
       //const updatedChats = userChats.filter((chat) => chat.key !== id);
       //dispatch(updateChats(updatedChats));
     } else {
@@ -102,6 +101,8 @@ const ChatListScreen = (props) => {
   );
 
   const filteredUserChats = userChats.filter((chat) => !chat.isCourseChat);
+  const filteredChats = filteredUserChats.filter((chat) => chat.isValid);
+
 
   return (
     <PageContainer>
@@ -121,7 +122,7 @@ const ChatListScreen = (props) => {
       </View>
 
       <FlatList
-        data={filteredUserChats}
+        data={filteredChats}
         keyExtractor={(item) => item.key}
         renderItem={(itemData) => {
           const chatData = itemData.item;

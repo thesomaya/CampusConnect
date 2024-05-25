@@ -1,24 +1,36 @@
-const messagesRef = child(dbRef, `messages/${chatId}`);
-        const userMessagesRef = child(dbRef, `userMessages/${userData.userId}/${chatId}`);
-
+const messRef = child (dbRef, `userMessages/${userData.userId}`);
+        const messagesRef = child(dbRef, `messages/${chatId}`);
+        const userMessagesRef = child(dbRef,`userMessages/${userData.userId}/${chatId}`);
+        refs.push(messRef);
         refs.push(messagesRef);
         refs.push(userMessagesRef);
 
-        onValue(messagesRef, messagesSnapshot => {
-          const messagesData = messagesSnapshot.val();
-        
-          onValue(userMessagesRef, userMessagesSnapshot => {
-            const userMessagesData = userMessagesSnapshot.val();
-        
-            if (messagesData && userMessagesData) {
-              const filteredMessages = Object.keys(userMessagesData).reduce((acc, messageId) => {
-                const message = messagesData[messageId];
-                if (message) { // Check if message exists (avoid undefined)
-                  acc.push(message); // Add message to filtered array
-                }
-                return acc;
-              }, []);        
-              dispatch(setChatMessages({ chatId, messagesData: filteredMessages }));
+        onValue(messRef, (messRefSnapshot) => {
+          const messRefData = messRefSnapshot.val();
+
+        onValue(userMessagesRef, (userMessagesSnapshot) => {
+          const userMessagesData = userMessagesSnapshot.val();
+
+          onValue(messagesRef, (messagesSnapshot) => {
+            const messagesData = messagesSnapshot.val();
+
+            
+            
+            if (messRefData === null || messRefData === undefined || messagesData && userMessagesData) {
+              console.log("messRefData: ", messRefData);
+            console.log("userMessagesData: ", userMessagesData);
+            console.log("messagesData: ", messagesData);
+              
+              const filteredMessages = Object.entries(messagesData)
+                .filter(([key, message]) =>
+                  userMessagesData.hasOwnProperty(key)
+                )
+                .map(([key, message]) => ({ ...message, key }));
+              dispatch(
+                setChatMessages({ chatId, messagesData: filteredMessages })
+              );
             }
           });
         });
+      });
+      

@@ -12,7 +12,8 @@ import CustomHeaderButton from "../components/CustomHeaderButton";
 import PageContainer from "../components/PageContainer";
 import ReplyTo from "../components/ReplyTo";
 import colors from "../constants/colors";
-import { createChat, isUserInChat, sendDocument, sendImage, sendTextMessage, updateUserChat } from "../utils/actions/chatActions";
+import { createChat, isUserInChat, sendDocument, sendImage, sendTextMessage } from "../utils/actions/chatActions";
+import { updateUserChat } from "../utils/actions/userActions";
 import { launchImagePicker, openCamera, uploadImageAsync } from "../utils/imagePickerHelper";
 import { launchDocumentPicker, uploadDocumentAsync } from '../utils/launchDocumentPicker';
 
@@ -75,16 +76,13 @@ const ChatScreen = (props) => {
   const chatMessages = useSelector(state => {
     if (!chatId) return [];
 
-    const chatMessagesData = state.messages.messagesData[chatId] || {};
-    const filteredMessages = Object.fromEntries(
-      Object.entries(chatMessagesData).filter(([key, message]) => message.isValid)
-    );
+    const chatMessagesData = state.messages.messagesData[chatId];
 
-    if (!filteredMessages) return [];
+    if (!chatMessagesData) return [];
 
     const messageList = [];
-    for (const key in filteredMessages) {
-      const message = filteredMessages[key];
+    for (const key in chatMessagesData) {
+      const message = chatMessagesData[key];
 
       messageList.push({
         key,
@@ -97,7 +95,12 @@ const ChatScreen = (props) => {
 
   const chatData = (chatId && storedChats[chatId]) || props.route?.params?.newChatData || {};
 
- 
+  if (chatId && storedChats[chatId]) {
+    if (storedChats[chatId].isValid === false) {
+        storedChats[chatId].isValid = true;
+        updateUserChat(userData.userId, chatId, { isValid: true });
+    }
+}
   const getChatTitleFromName = () => {
     const otherUserId = chatUsers.find(uid => uid !== userData.userId);
     const otherUserData = storedUsers[otherUserId];
@@ -150,12 +153,6 @@ const ChatScreen = (props) => {
         setChatId(id);
         setIsCreatingChat(false);
       }
-      if (chatId && storedChats[chatId]) {
-        if (storedChats[chatId].isValid === false) {
-            storedChats[chatId].isValid = true;
-            updateUserChat(userData.userId, chatId, { isValid: true });
-        }
-    }
 
       await sendTextMessage(id, userData, messageText, replyingTo && replyingTo.key, chatUsers);
       setMessageText("");

@@ -27,7 +27,10 @@ const messagesSlice = createSlice({
         setStarredMessages: (state, action) => {
             const { starredMessages } = action.payload;
             state.starredMessages = { ...starredMessages };
-        }
+        },
+        deleteMessage(state, action) {
+            delete state.messagesData[action.payload];
+          },
     
     }
 });
