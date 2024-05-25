@@ -26,7 +26,7 @@ const ContactScreen = props => {
         const getCommonUserChats = async () => {
             const currentUserChats = await getUserChats(currentUser.userId);
             setCommonChats(
-                Object.values(currentUserChats).filter(cid => storedChats[cid] && storedChats[cid].isGroupChat)
+                Object.keys(currentUserChats).filter(cid => storedChats[cid] && storedChats[cid].isGroupChat)
             )
         }
 

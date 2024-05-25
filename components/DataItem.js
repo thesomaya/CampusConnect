@@ -3,9 +3,7 @@ import React, { useRef } from 'react';
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { MenuOption } from 'react-native-popup-menu';
 import uuid from 'react-native-uuid';
-import { useDispatch } from 'react-redux';
 import colors from '../constants/colors';
-import { deletingChat } from '../utils/actions/chatActions';
 import ProfileImage from './ProfileImage';
 
 
@@ -28,12 +26,6 @@ const DataItem = props => {
     const hideImage = props.hideImage && props.hideImage === true;
     const menuRef = useRef(null);
     const id = useRef(uuid.v4());
-    const dispatch = useDispatch();
-
-    const deleteChat = async (chatId) => {
-        await deletingChat(chatId);
-        dispatch(setChatsData(updatedChats));
-    };
 
     return (
         <TouchableWithoutFeedback

@@ -30,6 +30,7 @@ import { setChatsData } from "../store/chatSlice";
 import { setChatMessages, setStarredMessages } from "../store/messagesSlice";
 import { setPostsData } from "../store/postSlice";
 import { setStoredUsers } from "../store/userSlice";
+import { lastMessage } from "../utils/actions/chatActions";
 import { getFirebaseApp } from "../utils/firebaseHelper";
 
 const Stack = createStackNavigator();
@@ -204,12 +205,11 @@ const MainNavigator = (props) => {
 
       for (let i = 0; i < chatIds.length; i++) {
         const chatId = chatIds[i];
-        const isValid = chatIdsData[chatId] === true;
 
         const chatRef = child(dbRef, `chats/${chatId}`);
         refs.push(chatRef);
 
-        onValue(chatRef, (chatSnapshot) => {
+        onValue(chatRef, async (chatSnapshot) => {
           chatsFoundCount++;
 
           const data = chatSnapshot.val();
@@ -236,6 +236,8 @@ const MainNavigator = (props) => {
 
             chatsData[chatSnapshot.key] = data;
             chatsData[chatSnapshot.key].isValid = chatIdsData[chatId];
+            const text = (await lastMessage(userData.userId, chatId)) || "";
+            chatsData[chatId].latestMessage = text;
           }
 
           if (chatsFoundCount >= chatIds.length) {
@@ -245,25 +247,27 @@ const MainNavigator = (props) => {
         });
 
         const messagesRef = child(dbRef, `messages/${chatId}`);
-        const userMessagesRef = child(dbRef,`userMessages/${userData.userId}/${chatId}`);
+        const userMessagesRef = child(
+          dbRef,
+          `userMessages/${userData.userId}/${chatId}`
+        );
         refs.push(messagesRef);
         refs.push(userMessagesRef);
 
-        onValue(userMessagesRef, (userMessagesSnapshot) => {
+        onValue(userMessagesRef, async (userMessagesSnapshot) => {
           const messageIdsData = userMessagesSnapshot.val() || {};
 
-          onValue (messagesRef, messagesSnapshot => {
+          onValue(messagesRef, async (messagesSnapshot) => {
             const messagesData = messagesSnapshot.val() || {};
             const messageIds = Object.keys(messageIdsData);
 
-          for (let i = 0; i < messageIds.length; i++) {
-            const messageId = messageIds[i];
-            messagesData[messageId].isValid = messageIdsData[messageId];
-          }
+            for (let i = 0; i < messageIds.length; i++) {
+              const messageId = messageIds[i];
+              messagesData[messageId].isValid = messageIdsData[messageId];
+            }
             dispatch(setChatMessages({ chatId, messagesData }));
-          
           });
-      });
+        });
 
         if (chatsFoundCount == 0) {
           setIsLoading(false);

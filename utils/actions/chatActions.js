@@ -248,6 +248,46 @@ export const starMessage = async (messageId, chatId, userId) => {
     console.log(error);
   }
 };
+export const lastMessage = async (userId, chatId) => {
+  try {
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
+    const userMessagesRef = child(dbRef, `userMessages/${userId}/${chatId}`);
+
+    // Fetch all user messages for the chat
+    const userMessagesSnapshot = await get(userMessagesRef);
+
+    if (userMessagesSnapshot.exists()) {
+      const userMessages = userMessagesSnapshot.val();
+
+      // Get all message IDs that are not deleted
+      const validMessageIds = Object.entries(userMessages)
+        .filter(([_, value]) => value === true)
+        .map(([key, _]) => key);
+
+      if (validMessageIds.length > 0) {
+        // Get the last valid message ID
+        const lastMessageId = validMessageIds[validMessageIds.length - 1];
+
+        // Fetch the message text from messages node
+        const messageRef = child(dbRef, `messages/${chatId}/${lastMessageId}`);
+        const messageSnapshot = await get(messageRef);
+
+        if (messageSnapshot.exists()) {
+          const messageData = messageSnapshot.val();
+          const lastMessageText = messageData.text;
+
+          return lastMessageText;
+        }
+      }
+    }
+
+    return null; // Return null if no valid message is found
+  } catch (error) {
+    console.error("Error fetching last message:", error);
+    return null;
+  }
+};
 
 export const deleteMessage = async (chatId, messageId) => {
   try {
