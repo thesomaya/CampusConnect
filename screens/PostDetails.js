@@ -36,8 +36,6 @@ const PostDetails = ({ route }) => {
       <View style={styles.separator} />
       <ScrollView>
       <Text style={styles.text}>{post.text}</Text>
-      
-      
 
       {post.imageUrl && (
         <Image source={{ uri: post.imageUrl }} style={styles.imageContainer} />

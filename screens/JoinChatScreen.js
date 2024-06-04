@@ -1,80 +1,104 @@
-import React, { useEffect, useState } from 'react';
-import { Text, Image, ActivityIndicator, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useSelector } from 'react-redux';
-import { Linking } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
+import { Alert, View } from "react-native";
+import { useSelector } from "react-redux";
+import { isUserInGroup, joinChat } from "../utils/actions/chatActions.js";
 
 const JoinChatScreen = ({ route }) => {
   const navigation = useNavigation();
-  const storedChats = useSelector(state => state.chats.chatsData);
+  const userData = useSelector((state) => state.auth.userData);
   const { invitationCode } = route.params;
   const [chatData, setChatData] = useState(null);
+  const [userInChat, setUserInChat] = useState(null);
+
+  JoinChatScreen.navigationOptions = ({ navigation }) => ({
+    headerLeft: (
+      <Ionicons name="arrow-back" size={24} color="black" onPress={() => navigation.goBack()} />
+    ),
+  });
+  
+  useEffect(() => {
+    const getChatData = async () => {
+      try {
+        const { chatData: foundChatData, isInChat: foundUserData } = await isUserInGroup(userData.userId, invitationCode);
+        
+        if (foundChatData) {
+          console.log("foundChatData", foundChatData);
+          console.log("foundUserData", foundUserData);
+          setChatData(foundChatData);
+          setUserInChat(foundUserData);
+        } else {
+          console.log("Chat not found");
+          navigation.goBack();
+        }
+      } catch (error) {
+        console.error("Error fetching chat data", error);
+        navigation.goBack();
+      }
+    };
+    getChatData();
+  }, [invitationCode, navigation, userData.userId]);
 
   useEffect(() => {
-    // Implement logic to search for chatData based on the invitationCode
-    const foundChatData = Object.values(storedChats).find(chat => chat.invitationCode === invitationCode);
-
-    if (foundChatData) {
-      setChatData(foundChatData);
-    } else {
-      console.log('Chat not found');
-      navigation.goBack(); // or navigate to an error screen
+    if (chatData !== null) {
+      if (userInChat !== null) {
+        console.log("chatData updated", chatData);
+        console.log("userInChat updated", userInChat);
+        if (userInChat) {
+          handleNavigation();
+        } else {
+          showJoinConfirmationAlert();
+        }
+      }
     }
-  }, [storedChats, invitationCode, navigation]);
+  }, [chatData, userInChat]);
 
   const handleCancel = () => {
-    // Handle cancel action
-    navigation.goBack(); // Go back to the previous screen or handle as needed
+    navigation.goBack();
   };
 
-  const handleJoin = () => {
-    // Handle join action
-    // Navigate to the ChatScreen with the obtained chatId
-    navigation.navigate('ChatScreen', { chatId: chatData.chatId }); // Make sure to replace chatId with the actual key you use for the chat ID
+  const handleJoin = async () => {
+    console.log("Joining chat");
+    if (!userInChat) {
+      await joinChat(userData, chatData);
+      setUserInChat(true); // Manually setting userInChat to true after joining
+    }
+    handleNavigation();
+  };
+
+  const handleNavigation = () => {
+    navigation.replace("ChatScreen", { chatId: chatData.chatId });  
   };
 
   const showJoinConfirmationAlert = () => {
     Alert.alert(
-      'Join Chat',
-      `Do you want to join the chat with invitation code: ${invitationCode}?`,
+      "Join Chat",
+      `Do you want to join the chat: ${chatData.chatName}?`,
       [
         {
-          text: 'Cancel',
+          text: "Cancel",
           onPress: handleCancel,
-          style: 'cancel',
+          style: "cancel",
         },
         {
-          text: 'Join',
+          text: "Join",
           onPress: handleJoin,
         },
       ],
-      {
-        cancelable: false,
-      }
+      { cancelable: false }
     );
   };
 
   return (
-    <>
-      {chatData !== null ? (
-        <>
-          {showJoinConfirmationAlert()}
-          {/* The rest of your component using chatData. */}
-          <Image
-            source={{ uri: chatData.chatImage }}
-            style={{ width: 50, height: 50, borderRadius: 25, marginBottom: 10 }}
-          />
-          <Text>{chatData.chatName}</Text>
-          <Text>{`Joining chat with invitation code: ${invitationCode}`}</Text>
-          {/* The rest of your component */}
-        </>
-      ) : (
-        // Show loading indicator or any other UI while chatData is being fetched
+    <View>
+      {/* {chatData !== null ? (
         <ActivityIndicator size='large' color='blue' />
-      )}
-    </>
+      ) : (
+        <ActivityIndicator size='large' color='blue' />
+      )} */}
+    </View>
   );
 };
-
 
 export default JoinChatScreen;

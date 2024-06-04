@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform, Button } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import logo from '../assets/images/CampusConnectLogo.png';
 import PageContainer from '../components/PageContainer';
 import SignInForm from '../components/SignInForm';
 import SignUpForm from '../components/SignUpForm';
 import colors from '../constants/colors';
-import logo from '../assets/images/CampusConnectLogo.png';
 
 const AuthScreen = props => {
 

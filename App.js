@@ -22,7 +22,6 @@ console.warn = (...args) => {
   originalConsoleWarn.apply(console, args); // If the warning does not match the specific sentence, pass it through
 };
 
-
 export default function App() {
 
   const [appIsLoaded, setAppIsLoaded] = useState(false);
@@ -73,7 +72,7 @@ export default function App() {
     <SafeAreaProvider
       style={styles.container}
       onLayout={onLayout}>
-
+        
         <AppNavigator />
 
     </SafeAreaProvider>

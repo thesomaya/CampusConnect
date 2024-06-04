@@ -1,4 +1,4 @@
-import { child, endAt, get, getDatabase, orderByChild, query, ref, startAt } from "firebase/database";
+import { child, endAt, get, getDatabase, orderByChild, query, ref, startAt, update } from "firebase/database";
 import { getFirebaseApp } from "../firebaseHelper.js";
 
 export const getUserData = async (userId) => {
@@ -33,8 +33,8 @@ export const addUserChat = async (userId, chatId) => {
     try {
         const app = getFirebaseApp();
         const dbRef = ref(getDatabase(app));
-        const chatRef = child(dbRef, `userChats/${userId}`);
-        await push(chatRef, chatId);
+        await update(child(dbRef, `userChats/${userId}`), { [chatId]: true });
+
     } catch (error) {
         console.log(error);
         throw error;

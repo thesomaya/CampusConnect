@@ -1,36 +1,74 @@
-const messRef = child (dbRef, `userMessages/${userData.userId}`);
-        const messagesRef = child(dbRef, `messages/${chatId}`);
-        const userMessagesRef = child(dbRef,`userMessages/${userData.userId}/${chatId}`);
-        refs.push(messRef);
-        refs.push(messagesRef);
-        refs.push(userMessagesRef);
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Image, Text } from 'react-native';
+import { useSelector } from 'react-redux';
 
-        onValue(messRef, (messRefSnapshot) => {
-          const messRefData = messRefSnapshot.val();
+const JoinChatScreen = ({ route }) => {
+  const navigation = useNavigation();
+  const storedChats = useSelector(state => state.chats.chatsData);
+  const { invitationCode } = route.params;
+  const [chatData, setChatData] = useState(null);
 
-        onValue(userMessagesRef, (userMessagesSnapshot) => {
-          const userMessagesData = userMessagesSnapshot.val();
+  useEffect(() => {
+    const foundChatData = Object.values(storedChats).find(chat => chat.invitationCode === invitationCode);
+    if (foundChatData) {
+      setChatData(foundChatData);
+    } else {
+      console.log('Chat not found');
+      navigation.goBack(); 
+    }
+  }, [storedChats, invitationCode, navigation]);
 
-          onValue(messagesRef, (messagesSnapshot) => {
-            const messagesData = messagesSnapshot.val();
+  const handleCancel = () => {
+    navigation.goBack(); 
+  };
 
-            
-            
-            if (messRefData === null || messRefData === undefined || messagesData && userMessagesData) {
-              console.log("messRefData: ", messRefData);
-            console.log("userMessagesData: ", userMessagesData);
-            console.log("messagesData: ", messagesData);
-              
-              const filteredMessages = Object.entries(messagesData)
-                .filter(([key, message]) =>
-                  userMessagesData.hasOwnProperty(key)
-                )
-                .map(([key, message]) => ({ ...message, key }));
-              dispatch(
-                setChatMessages({ chatId, messagesData: filteredMessages })
-              );
-            }
-          });
-        });
-      });
-      
+  const handleJoin = () => {
+    navigation.navigate('ChatScreen', { chatId: chatData.key });
+  };
+
+  const showJoinConfirmationAlert = () => {
+    Alert.alert(
+      'Join Chat',
+      `Do you want to join the chat: ${chatData.chatName}?`,
+      [
+        {
+          text: 'Cancel',
+          onPress: handleCancel,
+          style: 'cancel',
+        },
+        {
+          text: 'Join',
+          onPress: handleJoin,
+        },
+      ],
+      {
+        cancelable: false,
+      }
+    );
+  };
+
+  return (
+    <>
+      {chatData !== null ? (
+        <>
+          {showJoinConfirmationAlert()}
+          {/* The rest of your component using chatData. */}
+          <Image
+            source={{ uri: chatData.chatImage }}
+            style={{ width: 50, height: 50, borderRadius: 25, marginBottom: 10 }}
+          />
+          <Text>{chatData.chatName}</Text>
+          <Text>{`Joining chat with invitation code: ${invitationCode}`}</Text>
+          {/* The rest of your component */}
+        </>
+      ) : (
+        // Show loading indicator or any other UI while chatData is being fetched
+        <ActivityIndicator size='large' color='blue' />
+      )}
+    </>
+  );
+};
+
+
+export default JoinChatScreen;

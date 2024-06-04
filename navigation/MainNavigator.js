@@ -3,15 +3,15 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { StackActions, useNavigation } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import * as Device from "expo-device";
+import * as Linking from 'expo-linking';
 import * as Notifications from "expo-notifications";
 import { child, get, getDatabase, off, onValue, ref } from "firebase/database";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  View,
-} from "react-native";
+  KeyboardAvoidingView, Platform,
+  View
+} from 'react-native';
 import { useDispatch, useSelector } from "react-redux";
 import colors from "../constants/colors";
 import commonStyles from "../constants/commonStyles";
@@ -36,7 +36,9 @@ import { getFirebaseApp } from "../utils/firebaseHelper";
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+
 const TabNavigator = () => {
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -89,6 +91,7 @@ const TabNavigator = () => {
 };
 
 const StackNavigator = () => {
+
   return (
     <Stack.Navigator>
       <Stack.Group>
@@ -130,9 +133,10 @@ const StackNavigator = () => {
             headerBackTitle: "Back",
           }}
         />
+      </Stack.Group>
+      <Stack.Group screenOptions={{ presentation: "containedModal" }}>
         <Stack.Screen name="JoinChat" component={JoinChatScreen} />
       </Stack.Group>
-
       <Stack.Group screenOptions={{ presentation: "containedModal" }}>
         <Stack.Screen name="NewChat" component={NewChatScreen} />
       </Stack.Group>
@@ -144,6 +148,7 @@ const StackNavigator = () => {
 };
 
 const MainNavigator = (props) => {
+
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
@@ -158,6 +163,12 @@ const MainNavigator = (props) => {
   const responseListener = useRef();
 
   useEffect(() => {
+
+    const handleDeepLink = () => {
+    };
+
+    const urlListener = Linking.addEventListener('url', handleDeepLink);
+
     registerForPushNotificationsAsync().then((token) =>
       setExpoPushToken(token)
     );
@@ -181,7 +192,8 @@ const MainNavigator = (props) => {
       });
 
     return () => {
-      Notifications.removeNotificationSubscription(
+      urlListener.remove();
+        Notifications.removeNotificationSubscription(
         notificationListener.current
       );
       Notifications.removeNotificationSubscription(responseListener.current);

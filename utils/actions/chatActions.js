@@ -14,6 +14,13 @@ import { getUserPushTokens } from "./authActions.js";
 import { addUserChat, getUserChats } from "./userActions.js";
 
 export const createChat = async (loggedInUserId, chatData) => {
+  const app = getFirebaseApp();
+  const dbRef = ref(getDatabase(app));
+
+  // Generate a new key for the chat
+  const newChatRef = push(child(dbRef, "chats"));
+  const newChatKey = newChatRef.key;
+
   const newChatData = {
     ...chatData,
     createdBy: loggedInUserId,
@@ -22,19 +29,19 @@ export const createChat = async (loggedInUserId, chatData) => {
     updatedAt: new Date().toISOString(),
     invitationCode: generateInvitationLink(),
     admins: [loggedInUserId],
+    chatId: newChatKey, // Assign the generated key to chatId
   };
 
-  const app = getFirebaseApp();
-  const dbRef = ref(getDatabase(app));
-  const newChat = await push(child(dbRef, "chats"), newChatData);
+  // Push the new chat data to the database using the generated key
+  await update(newChatRef, newChatData);
 
   const chatUsers = newChatData.users;
   for (let i = 0; i < chatUsers.length; i++) {
     const userId = chatUsers[i];
-    await update(child(dbRef, `userChats/${userId}`), { [newChat.key]: true });
+    await update(child(dbRef, `userChats/${userId}`), { [newChatKey]: true });
   }
 
-  return newChat.key;
+  return newChatKey;
 };
 
 export const sendTextMessage = async (
@@ -133,34 +140,32 @@ export const updateChatData = async (chatId, userId, chatData) => {
 };
 
 export const updateUserChat = async (userId, chatId, isValid) => {
-    try {
-        const app = getFirebaseApp();
-        const dbRef = ref(getDatabase(app));
-        
-        const userChatsRef = child(dbRef, `userChats/${userId}/${chatId}`);
-        await set (userChatsRef,{[chatId]:isValid})
-    
-    } catch (error) {
-            console.log(error);
-            throw error;
-        }
-}
+  try {
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
+
+    const userChatsRef = child(dbRef, `userChats/${userId}/${chatId}`);
+    await set(userChatsRef, { [chatId]: isValid });
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
 
 export const deleteUserChat = async (userId, chatId) => {
-    try {
-        const app = getFirebaseApp();
-        const dbRef = ref(getDatabase(app));
+  try {
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
 
-        await deleteAllMessages(userId,chatId);
-        
-        const userChatsRef = child(dbRef, `userChats/${userId}`);
-        await update (userChatsRef,{[chatId]:false})
-    
-    } catch (error) {
-            console.log(error);
-            throw error;
-        }
-}
+    await deleteAllMessages(userId, chatId);
+
+    const userChatsRef = child(dbRef, `userChats/${userId}`);
+    await update(userChatsRef, { [chatId]: false });
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
 
 const sendMessage = async (
   chatId,
@@ -453,6 +458,20 @@ export const addUsersToChat = async (
   await sendInfoMessage(chatData.key, userLoggedInData.userId, messageText);
 };
 
+export const joinChat = async (userData, chatData) => {
+  const existingUsers = chatData.users;
+  if (existingUsers.includes(userData.userId)) return;
+
+  await addUserChat(userData.userId, chatData.chatId);
+
+  await updateChatData(chatData.chatId, userData.userId, {
+    users: existingUsers.concat(userData.userId),
+  });
+
+  const messageText = `${userData.firstName} joined  the chat`;
+  await sendInfoMessage(chatData.chatId, userData.userId, messageText);
+};
+
 const sendPushNotificationForUsers = (chatUsers, title, body, chatId) => {
   chatUsers.forEach(async (uid) => {
     const tokens = await getUserPushTokens(uid);
@@ -554,21 +573,22 @@ export const isUserInGroup = async (userId, invitationLink) => {
 
     if (chatSnapshot.exists()) {
       const chatsData = chatSnapshot.val();
-      const chatId = Object.keys(chatsData).find(
-        (chatId) => chatsData[chatId].invitationCode === invitationLink
+      const chatData = Object.values(chatsData).find(
+        (chat) => chat.invitationCode === invitationLink
       );
 
-      if (chatId) {
-        const chatUsers = chatsData[chatId].users;
+      if (chatData) {
+        const chatUsers = chatData.users;
         const isInChat = chatUsers.includes(userId);
-        return { isInChat, chatId };
+
+        return { chatData, isInChat };
       } else {
-        return { isInChat: false, chatId: null };
+        return { chatData, isInChat: false };
       }
     }
   } catch (error) {
     console.error("Error checking user in chat:", error);
-    return { isInChat: false, chatId: null };
+    return { chatData: null, isInChat: false };
   }
 };
 

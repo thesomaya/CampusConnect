@@ -1,4 +1,4 @@
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect } from "react";
 import {
   FlatList,
@@ -16,7 +16,9 @@ import DataItem from "../components/DataItem";
 import PageContainer from "../components/PageContainer";
 import PageTitle from "../components/PageTitle";
 import colors from "../constants/colors";
-import { deleteUserChat } from "../utils/actions/chatActions";
+import { deleteChat } from "../store/chatSlice";
+import { deleteUserChat, removeUserFromChat } from "../utils/actions/chatActions";
+
 
 const ChatListScreen = (props) => {
   const dispatch = useDispatch();
@@ -78,27 +80,46 @@ const ChatListScreen = (props) => {
     }
 
     props.navigation.navigate("ChatScreen", navigationProps);
-  }, [props.navigation, props.route?.params]);
+  }, [props.navigation, props.route?.params, handleLeaveChat]);
 
-  const handleDeleteChat = useCallback(async (chatId) => {
-    if (chatId) {
-      await deleteUserChat(userData.userId, chatId);
-      //dispatch(deleteChat(chatId));
-      //const updatedChats = userChats.filter((chat) => chat.key !== id);
-      //dispatch(updateChats(updatedChats));
+  const handleDeleteChat = useCallback(async (chatData) => {
+    if (chatData) {
+      await deleteUserChat(userData.userId, chatData.chatId);
+      await deleteChat();
     } else {
       console.error("Chat ID is null");
     }
-  }, [dispatch]);
+  }, []);
 
-  const renderSwipe = (chatId) => (
-    <TouchableOpacity onPress={() => handleDeleteChat(chatId)}>
+  const handleLeaveChat = useCallback(async (chatData) => {
+    if (chatData) {
+      await removeUserFromChat(userData, userData, chatData);
+      await deleteUserChat(userData.userId, chatData.chatId);
+      await deleteChat();
+
+    } else {
+      console.error("Chat ID is null");
+    }
+  }, []);
+
+  const renderSwipe = (chatData) => (
+    chatData.isGroupChat ? (
+      <TouchableOpacity onPress={() => handleLeaveChat(chatData)}>
+        <View style={styles.deleteButton}>
+          <Ionicons name="exit-outline" size={24} color="white" />
+          <Text style={styles.deleteText}>Leave</Text>
+        </View>
+      </TouchableOpacity>
+    ) : (
+      <TouchableOpacity onPress={() => handleDeleteChat(chatData)}>
       <View style={styles.deleteButton}>
-        <AntDesign name="delete" size={24} color="white" />
+        <AntDesign name="delete" size={20} color="white" />
         <Text style={styles.deleteText}>Delete</Text>
       </View>
     </TouchableOpacity>
+    )
   );
+  
 
   const filteredUserChats = userChats.filter((chat) => !chat.isCourseChat);
   const filteredChats = filteredUserChats.filter((chat) => chat.isValid);
@@ -149,7 +170,7 @@ const ChatListScreen = (props) => {
           }
 
           return (
-            <Swipeable renderRightActions={() => renderSwipe(chatId)}>
+            <Swipeable renderRightActions={() => renderSwipe(chatData)}>
               <DataItem
                 title={title}
                 subTitle={subTitle}

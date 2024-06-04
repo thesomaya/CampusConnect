@@ -1,0 +1,105 @@
+import { useNavigation } from "@react-navigation/native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Alert } from "react-native";
+import { useSelector } from "react-redux";
+import { isUserInGroup, joinChat } from "../utils/actions/chatActions.js";
+
+const JoinChatScreen = ({ route }) => {
+  const navigation = useNavigation();
+  const userData = useSelector((state) => state.auth.userData);
+  const { invitationCode } = route.params;
+  const [chatData, setChatData] = useState(null);
+  const [userInChat, setUserInChat] = useState(null);
+
+  JoinChatScreen.navigationOptions = ({ navigation }) => ({
+    headerLeft: (
+      <Ionicons name="arrow-back" size={24} color="black" />
+
+    ),
+  });
+  
+  useEffect(() => {
+    const getChatData = async () => {
+      const { chatData: foundChatData, isInChat: foundUserData } =
+        await isUserInGroup(userData.userId, invitationCode);
+
+      if (foundChatData) {
+        console.log("foundUserData", foundUserData);
+        setChatData(foundChatData);
+        setUserInChat(foundUserData);
+
+      } else {
+        console.log("Chat not found");
+        navigation.goBack();
+      }
+    };
+    getChatData();
+  }, [invitationCode, navigation,userData.userId]);
+
+  const handleCancel = () => {
+    navigation.goBack();
+  };
+
+  const handleJoin = async () => {
+    console.log("chatData", chatData);
+    console.log("userInChat", userInChat);
+    if (!userInChat) {
+      await joinChat(userData, chatData);
+      setUserInChat(true);
+    }
+    handleNavigation();
+  };
+  const handleNavigation = () => {
+    navigation.navigate("ChatScreen", { chatId: chatData.chatId });
+  };
+
+  const showJoinConfirmationAlert = () => {
+    if (chatData && !userInChat) {
+    Alert.alert(
+      "Join Chat",
+      `Do you want to join the chat: ${chatData.chatName}?`,
+      [
+        {
+          text: "Cancel",
+          onPress: handleCancel,
+          style: "cancel",
+        },
+        {
+          text: "Join",
+          onPress: handleJoin,
+        },
+      ],
+      {
+        cancelable: false,
+      }
+    );
+   }
+  };
+
+  return (
+    <>
+      <>
+        {/* {chatData !== null
+          ? !userInChat
+            ? showJoinConfirmationAlert()
+            : handleNavigation()
+          : null} */}
+        
+      {chatData !== null ?(
+        <>
+          { !userInChat ?
+          (showJoinConfirmationAlert()) : 
+          handleNavigation()}
+          
+        </>
+      ) : (
+        <ActivityIndicator size='large' color='blue' />
+      )}
+    
+
+      </>
+    </>
+  );
+};
+
+export default JoinChatScreen;

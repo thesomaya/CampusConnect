@@ -32,7 +32,6 @@ const ChatScreen = (props) => {
   const cancelButtonIndex = 0;
 
   const flatList = useRef();
-
   const userData = useSelector(state => state.auth.userData);
   const storedUsers = useSelector(state => state.users.storedUsers);
   const storedChats = useSelector(state => state.chats.chatsData);

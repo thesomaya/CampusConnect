@@ -5,7 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View
+  View,
 } from "react-native";
 import { useSelector } from "react-redux";
 import DataItem from "../components/DataItem";
@@ -17,9 +17,11 @@ import ProfileImage from "../components/ProfileImage";
 import SubmitButton from "../components/SubmitButton";
 import UserPreview from "../components/UserPreview";
 import colors from "../constants/colors";
+import { deleteChat } from "../store/chatSlice";
 import {
   addAdmin,
   addUsersToChat,
+  deleteUserChat,
   isAdmin,
   removeAdmin,
   removeUserFromChat,
@@ -31,6 +33,7 @@ import { reducer } from "../utils/reducers/formReducer";
 const ChatSettingsScreen = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showCopyMessage, setShowCopyMessage] = useState(false);
 
   const chatId = props.route.params.chatId;
   const chatData = useSelector((state) => state.chats.chatsData[chatId] || {});
@@ -44,7 +47,6 @@ const ChatSettingsScreen = (props) => {
   const [isAdminUser, setIsAdminUser] = useState();
   const [userAdmins, setUserAdmins] = useState({});
 
-
   const initialState = {
     inputValues: { chatName: chatData.chatName },
     inputValidities: { chatName: undefined },
@@ -52,7 +54,7 @@ const ChatSettingsScreen = (props) => {
   };
 
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
-  
+
   const handleGroupItemPress = async (user) => {
     setSelectedUser(user);
     setShowUserPreview(true);
@@ -66,17 +68,17 @@ const ChatSettingsScreen = (props) => {
       }
       setUserAdmins(admins);
     };
-  
+
     if (chatData.users.length) {
       handleAdminStatuses();
     }
   }, [chatData.users, storedUsers]);
-  
-  const handleGroupItemClose= () => {
+
+  const handleGroupItemClose = () => {
     setSelectedUser(null);
     setShowUserPreview(false);
-  };  
-  
+  };
+
   const selectedUsers = props.route.params && props.route.params.selectedUsers;
   useEffect(() => {
     if (!selectedUsers) {
@@ -107,13 +109,17 @@ const ChatSettingsScreen = (props) => {
   );
 
   const shareInvitationLink = () => {
-    return `https://192.168.1.143/join-chat/${chatData.invitationCode}`;
+    return `exp://192.168.1.143:8081/--/joinchat/${chatData.invitationCode}`;
   };
   const invitationLink = shareInvitationLink();
 
   const copyToClipboard = async (text) => {
     try {
       await Clipboard.setStringAsync(text);
+      setShowCopyMessage(true);
+      setTimeout(() => {
+        setShowCopyMessage(false); 
+      }, 3000);
     } catch (error) {
       console.log(error);
     }
@@ -147,6 +153,8 @@ const ChatSettingsScreen = (props) => {
       setIsLoading(true);
 
       await removeUserFromChat(userData, userData, chatData);
+      await deleteUserChat(userData.userId, chatData.chatId);
+      await deleteChat();
       props.navigation.popToTop();
     } catch (error) {
       console.log(error);
@@ -158,8 +166,7 @@ const ChatSettingsScreen = (props) => {
   const checkAdminStatus = async (user, chatData) => {
     const isUserAdmin = await isAdmin(user, chatData);
     setIsAdminUser(isUserAdmin);
-  }
-  
+  };
 
   if (!chatData.users) return null;
 
@@ -209,7 +216,9 @@ const ChatSettingsScreen = (props) => {
             {shareInvitationLink()}
           </Text>
         </View>
-
+        {showCopyMessage && (
+        <Text style={styles.copyMessage}>Link copied!</Text> 
+      )}
         <GroupItem
           type={"link"}
           title="Starred messages"
@@ -241,56 +250,63 @@ const ChatSettingsScreen = (props) => {
             }
           />
 
-          {chatData.users.map( (uid) => {
+          {chatData.users.map((uid) => {
             const currentUser = storedUsers[uid];
-            const handleAdminStatus = async (currentUser) => {
-              const adminValue = await isAdmin(currentUser, chatData);
-              setUserAdmins((prevAdmins) => ({ ...prevAdmins, [uid]: adminValue }));
-            };
-          
-          
+            if (!currentUser) return null;
+
             const currentAdmin = userAdmins[uid];
             return (
               <View key={uid}>
-                {
+                {uid && (
                   <GroupItem
                     key={uid}
                     image={currentUser.profilePicture}
                     title={`${currentUser.firstName} ${currentUser.lastName}`}
                     subTitle={currentUser.about}
                     type={uid !== userData.userId ? "link" : undefined}
-                    onPress={() => handleGroupItemPress(currentUser)}  
+                    onPress={() => handleGroupItemPress(currentUser)}
                     admin={currentAdmin}
                   />
-                }
+                )}
 
-                {
-                  selectedUser &&  showUserPreview && selectedUser.userId !== userData.userId && selectedUser.userId === uid &&
-                   (
-                  <UserPreview
-                    key={uid-"preview"}
-                    userData={currentUser}
-                    LoggedInUser={userData}
-                    name={`${currentUser.firstName} ${currentUser.lastName}`}
-                    image={currentUser.profilePicture}
-                    chatData={chatData}
-                    onPressInfo={() => {
-                      props.navigation.navigate("Contact", { uid, chatId });
-                      handleGroupItemClose();
-                    }}
-                    onPressMakeAdmin={() => isAdminUser ? removeAdmin(currentUser, chatData).then(() => handleGroupItemClose()) : 
-                      addAdmin(currentUser, chatData).then(() => handleGroupItemClose()) }
-                    onPressRemove={() => removeUserFromChat(userData, currentUser, chatData).then(() => handleGroupItemClose())}
-                    onClose={() => handleGroupItemClose()}
-                  />)
-                }
+                {selectedUser &&
+                  showUserPreview &&
+                  selectedUser.userId !== userData.userId &&
+                  selectedUser.userId === uid && (
+                    <UserPreview
+                      key={uid - "preview"}
+                      userData={currentUser}
+                      LoggedInUser={userData}
+                      name={`${currentUser.firstName} ${currentUser.lastName}`}
+                      image={currentUser.profilePicture}
+                      chatData={chatData}
+                      onPressInfo={() => {
+                        props.navigation.navigate("Contact", { uid, chatId });
+                        handleGroupItemClose();
+                      }}
+                      onPressMakeAdmin={() =>
+                        isAdminUser
+                          ? removeAdmin(currentUser, chatData).then(() =>
+                              handleGroupItemClose()
+                            )
+                          : addAdmin(currentUser, chatData).then(() =>
+                              handleGroupItemClose()
+                            )
+                      }
+                      onPressRemove={() =>
+                        removeUserFromChat(
+                          userData,
+                          currentUser,
+                          chatData
+                        ).then(() => handleGroupItemClose())
+                      }
+                      onClose={() => handleGroupItemClose()}
+                    />
+                  )}
               </View>
             );
           })}
-
         </View>
-
-        
       </ScrollView>
 
       {
@@ -298,7 +314,7 @@ const ChatSettingsScreen = (props) => {
           title="Leave chat"
           color={colors.black}
           onPress={() => leaveChat()}
-          style={{ width: '40%', alignSelf: 'center', marginBottom: 20 }}
+          style={{ width: "40%", alignSelf: "center", marginBottom: 20 }}
         />
       }
     </PageContainer>
@@ -335,6 +351,10 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
     marginBottom: 5,
   },
+  copyMessage: {
+    color: colors.primary,
+    marginVertical: 8,
+    },
 });
 
 export default ChatSettingsScreen;
