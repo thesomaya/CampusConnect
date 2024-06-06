@@ -1,36 +1,27 @@
-Priorities: 
-- block 
-- inviting link 
+Priorities:
+- blocking users
 - announcement page delete and edit posts
-
-- delete message for me / for all 
-- chat and group deletion only for the person
-
-Features to implement:
-- page not rendering when deleting a chat  
-- extra admin for group 
+- more than one photo and document in posts
+- assign admin when the only admin leaves the chat
+- photos not working
+- think about the courses page, add a lecturer
 - deleting otherUser message by admin in group
 - sending videos
-- download feature for photos videos documents 
-- forward messages feature 
+- download feature for photos videos documents
+- forward messages feature
 - sending location
-- creating a poll in chats 
+- creating a poll in chats
 - sending contacts
 - adding voice messages
-- blocking users
-- group description
 - announcements section in the timeline screen which includes reactions and comments for posts 
 - search by student id
 - update settings page
 - group settings to allow only admin to write messages
 - change default group image
 - deleting account
-- dark theme 
-- email verification using outlook, sms verification
+- dark theme
+- email verification firebase / forgot password
 - updating settings page to add different privacy options (lastseen and online, notifications, theme, storage prefrences) 
-
-Bug Fixes:
-sign up roles not showing on android
 
 
 

@@ -17,7 +17,7 @@ import PageContainer from "../components/PageContainer";
 import PageTitle from "../components/PageTitle";
 import colors from "../constants/colors";
 import { deleteChat } from "../store/chatSlice";
-import { deleteUserChat, removeUserFromChat } from "../utils/actions/chatActions";
+import { deleteUserChat, leaveChat } from "../utils/actions/chatActions";
 
 
 const ChatListScreen = (props) => {
@@ -93,8 +93,7 @@ const ChatListScreen = (props) => {
 
   const handleLeaveChat = useCallback(async (chatData) => {
     if (chatData) {
-      await removeUserFromChat(userData, userData, chatData);
-      await deleteUserChat(userData.userId, chatData.chatId);
+      await leaveChat(userData, chatData);
       await deleteChat();
 
     } else {

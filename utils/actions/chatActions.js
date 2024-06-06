@@ -157,7 +157,7 @@ export const deleteUserChat = async (userId, chatId) => {
     const app = getFirebaseApp();
     const dbRef = ref(getDatabase(app));
 
-    await deleteAllMessages(userId, chatId);
+    await deleteAllMessages(chatId);
 
     const userChatsRef = child(dbRef, `userChats/${userId}`);
     await update(userChatsRef, { [chatId]: false });
@@ -253,6 +253,24 @@ export const starMessage = async (messageId, chatId, userId) => {
     console.log(error);
   }
 };
+export const unStarMessage = async (messageId, chatId, userId) => {
+  try {
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
+    const childRef = child(
+      dbRef,
+      `userStarredMessages/${userId}/${chatId}/${messageId}`
+    );
+
+    const snapshot = await get(childRef);
+
+    if (snapshot.exists()) {
+      await remove(childRef);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 export const lastMessage = async (userId, chatId) => {
   try {
     const app = getFirebaseApp();
@@ -294,14 +312,17 @@ export const lastMessage = async (userId, chatId) => {
   }
 };
 
-export const deleteMessage = async (chatId, messageId) => {
+export const deleteMessageforAll = async (userId, chatId, messageId) => {
   try {
     const app = getFirebaseApp();
     const dbRef = ref(getDatabase(app));
     const messageRef = child(dbRef, `messages/${chatId}/${messageId}`);
 
-    await remove(messageRef);
-
+    await update(messageRef, {
+      isDeleted: true,
+      text: "This message was deleted",
+    });
+    await unStarMessage(messageId, chatId, userId);
     const latestMessageSnapshot = await get(
       child(dbRef, `messages/${chatId}`),
       {}
@@ -334,8 +355,7 @@ export const deleteMessageforUser = async (userId, chatId, messageId) => {
     const dbRef = ref(getDatabase(app));
     const messageRef = child(dbRef, `userMessages/${userId}/${chatId}`);
     await update(messageRef, { [messageId]: false });
-
-    //await remove(messageRef);
+    unStarMessage(messageId, chatId, userId);
 
     return true;
   } catch (error) {
@@ -399,10 +419,10 @@ export const removeUserFromChat = async (
 ) => {
   const userToRemoveId = userToRemoveData.userId;
   const newUsers = chatData.users.filter((uid) => uid !== userToRemoveId);
-  await updateChatData(chatData.key, userLoggedInData.userId, {
+  await updateChatData(chatData.key, userToRemoveData.userId, {
     users: newUsers,
   });
-
+  await removeAdmin(userToRemoveData, chatData);
   const userChats = await getUserChats(userToRemoveId);
 
   for (const key in userChats) {
@@ -420,6 +440,20 @@ export const removeUserFromChat = async (
       : `${userLoggedInData.firstName} removed ${userToRemoveData.firstName} from the chat`;
 
   await sendInfoMessage(chatData.key, userLoggedInData.userId, messageText);
+};
+
+export const leaveChat = async (userData, chatData) => {
+  const newUsers = chatData.users.filter((uid) => uid !== userData.userId);
+  await updateChatData(chatData.key, userData.userId, {
+    users: newUsers,
+  });
+  await deleteUserChat(userData.userId, chatData.chatId);
+  await removeAdmin(userData, chatData);
+  
+
+  const messageText = `${userData.firstName} left the chat`;
+
+  await sendInfoMessage(chatData.chatId, userData.userId, messageText);
 };
 
 export const addUsersToChat = async (
@@ -498,6 +532,24 @@ const sendPushNotificationForUsers = (chatUsers, title, body, chatId) => {
 export const generateInvitationLink = () => {
   const invitationCode = uuid.v4();
   return invitationCode;
+};
+
+export const updateInvitationLink = async (chatData) => {
+  try {
+    const newLink = generateInvitationLink();
+    const app = getFirebaseApp();
+    const db = getDatabase(app);
+    const chatRef = ref(db, `chats/${chatData.chatId}`);
+
+    await update(chatRef, { invitationCode: newLink });
+
+    chatData.invitationCode = newLink;
+
+    return chatData;
+  } catch (error) {
+    console.error("Error updating invitation link:", error);
+    return null;
+  }
 };
 
 export const addAdmin = async (userData, chatData) => {

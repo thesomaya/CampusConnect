@@ -226,10 +226,12 @@ const MainNavigator = (props) => {
 
           const data = chatSnapshot.val();
 
-          if (data) {
-            if (!data.users.includes(userData.userId)) {
-              return;
-            }
+          
+              if (!data.users.includes(userData.userId)) {
+                return;
+              }
+            
+            
 
             data.key = chatSnapshot.key;
 
@@ -250,7 +252,7 @@ const MainNavigator = (props) => {
             chatsData[chatSnapshot.key].isValid = chatIdsData[chatId];
             const text = (await lastMessage(userData.userId, chatId)) || "";
             chatsData[chatId].latestMessage = text;
-          }
+          
 
           if (chatsFoundCount >= chatIds.length) {
             dispatch(setChatsData({ chatsData }));

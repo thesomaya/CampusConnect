@@ -22,6 +22,7 @@ const SettingsScreen = props => {
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const userData = useSelector(state => state.auth.userData);
     const starredMessages = useSelector(state => state.messages.starredMessages ?? {});
+    
 
     const sortedStarredMessages = useMemo(() => {
         let result = [];
