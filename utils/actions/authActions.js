@@ -118,7 +118,8 @@ const createUser = async (firstName, lastName, studentNumber, email, selectedRol
         email,
         selectedRole,
         userId,
-        signUpDate: new Date().toISOString()
+        signUpDate: new Date().toISOString(),
+        blocked: [],
     };
 
     const dbRef = ref(getDatabase());

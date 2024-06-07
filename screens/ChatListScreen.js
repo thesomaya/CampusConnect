@@ -85,7 +85,7 @@ const ChatListScreen = (props) => {
   const handleDeleteChat = useCallback(async (chatData) => {
     if (chatData) {
       await deleteUserChat(userData.userId, chatData.chatId);
-      await deleteChat();
+      deleteChat();
     } else {
       console.error("Chat ID is null");
     }
@@ -94,7 +94,7 @@ const ChatListScreen = (props) => {
   const handleLeaveChat = useCallback(async (chatData) => {
     if (chatData) {
       await leaveChat(userData, chatData);
-      await deleteChat();
+      deleteChat();
 
     } else {
       console.error("Chat ID is null");
@@ -103,13 +103,13 @@ const ChatListScreen = (props) => {
 
   const renderSwipe = (chatData) => (
     chatData.isGroupChat ? (
-      <TouchableOpacity onPress={() => handleLeaveChat(chatData)}>
+        <TouchableOpacity onPress={() => handleLeaveChat(chatData)}>
         <View style={styles.deleteButton}>
           <Ionicons name="exit-outline" size={24} color="white" />
           <Text style={styles.deleteText}>Leave</Text>
         </View>
       </TouchableOpacity>
-    ) : (
+      ) : (
       <TouchableOpacity onPress={() => handleDeleteChat(chatData)}>
       <View style={styles.deleteButton}>
         <AntDesign name="delete" size={20} color="white" />

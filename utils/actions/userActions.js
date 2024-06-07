@@ -21,9 +21,19 @@ export const getUserChats = async (userId) => {
         const userRef = child(dbRef, `userChats/${userId}`);
 
         const snapshot = await get(userRef);
-        return snapshot.val();
+        const allChats = snapshot.val() || {};
+
+        const validChats = {};
+        for (const [chatId, isValid] of Object.entries(allChats)) {
+            if (isValid) {
+                validChats[chatId] = isValid;
+            }
+        }
+
+        return validChats;
     } catch (error) {
         console.log(error);
+        return {}; 
     }
 }
 

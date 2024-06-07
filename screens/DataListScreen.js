@@ -147,8 +147,8 @@ const DataListScreen = props => {
                             props.navigation.navigate("Contact", {  uid: selectedUser.userId, chatId: chatId });
                             handleGroupItemClose();
                         }}
-                        onPressMakeAdmin={() => isAdminUser ? removeAdmin(selectedUser, chatData).then(handleGroupItemClose()) :
-                            addAdmin(selectedUser, chatData).then(handleGroupItemClose())}
+                        onPressMakeAdmin={() => isAdminUser ? removeAdmin(selectedUser.userId, chatData).then(handleGroupItemClose()) :
+                            addAdmin(selectedUser.userId, chatData).then(handleGroupItemClose())}
                         onPressRemove={() => removeUserFromChat(userData, selectedUser, chatData).then(handleGroupItemClose())}
                         onClose={() => handleGroupItemClose()}
                     />

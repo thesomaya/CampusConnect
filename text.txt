@@ -1,7 +1,7 @@
 Priorities:
-- blocking users
 - announcement page delete and edit posts
 - more than one photo and document in posts
+maybe dispatch it manually
 - assign admin when the only admin leaves the chat
 - photos not working
 - think about the courses page, add a lecturer

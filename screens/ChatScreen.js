@@ -1,8 +1,18 @@
 import { Feather } from "@expo/vector-icons";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, FlatList, Image, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import ActionSheet from 'react-native-action-sheet';
-import AwesomeAlert from 'react-native-awesome-alerts';
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import ActionSheet from "react-native-action-sheet";
+import AwesomeAlert from "react-native-awesome-alerts";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
 import { useSelector } from "react-redux";
@@ -12,9 +22,23 @@ import CustomHeaderButton from "../components/CustomHeaderButton";
 import PageContainer from "../components/PageContainer";
 import ReplyTo from "../components/ReplyTo";
 import colors from "../constants/colors";
-import { createChat, isUserInChat, sendDocument, sendImage, sendTextMessage, updateUserChat } from "../utils/actions/chatActions";
-import { launchImagePicker, openCamera, uploadImageAsync } from "../utils/imagePickerHelper";
-import { launchDocumentPicker, uploadDocumentAsync } from '../utils/launchDocumentPicker';
+import {
+  createChat,
+  isUserInChat,
+  sendDocument,
+  sendImage,
+  sendTextMessage,
+  updateUserChat,
+} from "../utils/actions/chatActions";
+import {
+  launchImagePicker,
+  openCamera,
+  uploadImageAsync,
+} from "../utils/imagePickerHelper";
+import {
+  launchDocumentPicker,
+  uploadDocumentAsync,
+} from "../utils/launchDocumentPicker";
 
 const ChatScreen = (props) => {
   const [chatUsers, setChatUsers] = useState([]);
@@ -27,56 +51,66 @@ const ChatScreen = (props) => {
   const [tempDocName, setTempDocName] = useState("");
   const [inChat, setInChat] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
-  const options = ['Cancel', 'Photos', 'Document', 'Contact', 'Location', 'Poll'];
+  const options = [
+    "Cancel",
+    "Photos",
+    "Document",
+    "Contact",
+    "Location",
+    "Poll",
+  ];
   const cancelButtonIndex = 0;
 
   const flatList = useRef();
-  const userData = useSelector(state => state.auth.userData);
-  const storedUsers = useSelector(state => state.users.storedUsers);
-  const storedChats = useSelector(state => state.chats.chatsData);
+  const userData = useSelector((state) => state.auth.userData);
+  const storedUsers = useSelector((state) => state.users.storedUsers);
+  const storedChats = useSelector((state) => state.chats.chatsData);
+  const userBlocks = useSelector((state) => state.users.blockedUsers);
   const showActionSheet = () => {
-      ActionSheet.showActionSheetWithOptions(
-        {
-          options,
-          cancelButtonIndex,
-        },
-        (buttonIndex) => {
-          handleActionSheetPress(buttonIndex);
-        }
-      );
-    };
-
-    const handleActionSheetPress = (buttonIndex) => {
-      switch (buttonIndex) {
-        case 1:
-          pickImage();
-          break;
-        case 2:
-          pickDocument();
-          break;
-        case 3:
-          // Contact
-          break;
-        case 4:
-          // Location
-          break;
-        case 5:
-          // Poll
-          break;
-        default:
-          // Cancel
-          break;
+    ActionSheet.showActionSheetWithOptions(
+      {
+        options,
+        cancelButtonIndex,
+      },
+      (buttonIndex) => {
+        handleActionSheetPress(buttonIndex);
       }
-    };
+    );
+  };
 
+  const handleActionSheetPress = (buttonIndex) => {
+    switch (buttonIndex) {
+      case 1:
+        pickImage();
+        break;
+      case 2:
+        pickDocument();
+        break;
+      case 3:
+        // Contact
+        break;
+      case 4:
+        // Location
+        break;
+      case 5:
+        // Poll
+        break;
+      default:
+        // Cancel
+        break;
+    }
+  };
 
-  const chatMessages = useSelector(state => {
+  const chatMessages = useSelector((state) => {
     if (!chatId) return [];
 
     const chatMessagesData = state.messages.messagesData[chatId] || {};
     const filteredMessages = Object.fromEntries(
-      Object.entries(chatMessagesData).filter(([key, message]) => message.isValid)
+      Object.entries(chatMessagesData).filter(
+        ([key, message]) => message.isValid
+      )
     );
 
     if (!filteredMessages) return [];
@@ -87,60 +121,81 @@ const ChatScreen = (props) => {
 
       messageList.push({
         key,
-        ...message
+        ...message,
       });
     }
 
     return messageList;
   });
 
-  const chatData = (chatId && storedChats[chatId]) || props.route?.params?.newChatData || {};
+  const chatData =
+    (chatId && storedChats[chatId]) || props.route?.params?.newChatData || {};
 
- 
   const getChatTitleFromName = () => {
-    const otherUserId = chatUsers.find(uid => uid !== userData.userId);
+    const otherUserId = chatUsers.find((uid) => uid !== userData.userId);
     const otherUserData = storedUsers[otherUserId];
 
-    return otherUserData && `${otherUserData.firstName} ${otherUserData.lastName}`;
-  }
+    return (
+      otherUserData && `${otherUserData.firstName} ${otherUserData.lastName}`
+    );
+  };
 
   useEffect(() => {
     if (!chatData) return;
-    
+
     props.navigation.setOptions({
       headerTitle: chatData.chatName ?? getChatTitleFromName(),
       headerRight: () => {
-        return <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
-          {
-            chatId && 
-            <Item
-              title="Chat settings"
-              iconName="settings-outline"
-              onPress={() => chatData.isGroupChat ?
-                props.navigation.navigate("ChatSettings", { chatId }) :
-                props.navigation.navigate("Contact", { uid: chatUsers.find(uid => uid !== userData.userId) })}
-            />
-          }
-        </HeaderButtons>
-      }
-    })
-    setChatUsers(chatData.users)
-  }, [chatUsers])
+        return (
+          <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
+            {chatId && (
+              <Item
+                title="Chat settings"
+                iconName="settings-outline"
+                onPress={() =>
+                  chatData.isGroupChat
+                    ? props.navigation.navigate("ChatSettings", { chatId })
+                    : props.navigation.navigate("Contact", {
+                        uid: chatUsers.find((uid) => uid !== userData.userId),
+                      })
+                }
+              />
+            )}
+          </HeaderButtons>
+        );
+      },
+    });
+    setChatUsers(chatData.users);
+  }, [chatUsers]);
 
-  useEffect( () =>  {
+  useEffect(() => {
     const checkUser = async () => {
       setIsCreatingChat(true);
       const response = await isUserInChat(userData.userId, chatId);
       setInChat(response);
       setIsCreatingChat(false);
-
-    }
+    };
     checkUser();
-    
-  }, [chatUsers, chatId])
+  }, [chatUsers, chatId]);
+
+  const otherUserId = chatUsers.find((uid) => uid !== userData.userId);
+
+  useEffect(() => {
+    if (otherUserId) {
+      const isBlocker =
+        userBlocks?.[userData.userId]?.[otherUserId] === true || false;
+      const isBlocked =
+        userBlocks?.[otherUserId] === true || false;
+
+      if (isBlocker === true || isBlocked === true) {
+        setIsBlocked(true);
+      } else {
+        setIsBlocked(false);
+      }
+    }
+  }, [otherUserId, userBlocks]);
 
   const sendMessage = useCallback(async () => {
-
     try {
       let id = chatId;
       if (!id) {
@@ -151,15 +206,20 @@ const ChatScreen = (props) => {
       }
       if (chatId && storedChats[chatId]) {
         if (storedChats[chatId].isValid === false) {
-            storedChats[chatId].isValid = true;
-            updateUserChat(userData.userId, chatId, { isValid: true });
+          storedChats[chatId].isValid = true;
+          updateUserChat(userData.userId, chatId, { isValid: true });
         }
-    }
+      }
 
-      await sendTextMessage(id, userData, messageText, replyingTo && replyingTo.key, chatUsers);
+      await sendTextMessage(
+        id,
+        userData,
+        messageText,
+        replyingTo && replyingTo.key,
+        chatUsers
+      );
       setMessageText("");
       setReplyingTo(null);
-
     } catch (error) {
       console.log(error);
       console.log(error.message);
@@ -199,12 +259,11 @@ const ChatScreen = (props) => {
     try {
       const documentInfo = await launchDocumentPicker();
       if (!documentInfo) return;
-  
+
       const { name, uri } = documentInfo;
-      
+
       setTempDocUri(uri);
       setTempDocName(name);
-
     } catch (error) {
       console.log(error);
       console.log(error.message);
@@ -216,7 +275,6 @@ const ChatScreen = (props) => {
     setIsLoading(true);
 
     try {
-
       let id = chatId;
       if (!id) {
         // No chat Id. Create the chat
@@ -227,23 +285,26 @@ const ChatScreen = (props) => {
       const uploadUrl = await uploadImageAsync(tempImageUri, true);
       setIsLoading(false);
 
-      await sendImage(id, userData, uploadUrl, replyingTo && replyingTo.key, chatUsers)
+      await sendImage(
+        id,
+        userData,
+        uploadUrl,
+        replyingTo && replyingTo.key,
+        chatUsers
+      );
       setReplyingTo(null);
       setTimeout(() => setTempImageUri(""), 100);
-      
     } catch (error) {
       console.log(error);
       console.log(error.message);
       console.log(error.stack);
-      
     }
-  }, [isLoading, tempImageUri, chatId])
+  }, [isLoading, tempImageUri, chatId]);
 
   const uploadDocument = useCallback(async () => {
     setIsLoading(true);
 
     try {
-
       let id = chatId;
       if (!id) {
         // No chat Id. Create the chat
@@ -253,96 +314,97 @@ const ChatScreen = (props) => {
 
       const uploadUrl = await uploadDocumentAsync(tempDocUri, true);
       setIsLoading(false);
-      await sendDocument(id, userData, uploadUrl, replyingTo && replyingTo.key, chatUsers, tempDocName)
+      await sendDocument(
+        id,
+        userData,
+        uploadUrl,
+        replyingTo && replyingTo.key,
+        chatUsers,
+        tempDocName
+      );
       setReplyingTo(null);
       setTempDocUri("");
       setTempDocName("");
-      
     } catch (error) {
       console.log(error);
       console.log(error.message);
       console.log(error.stack);
-      
     }
-  }, [isLoading, tempDocUri, tempDocName, chatId])
+  }, [isLoading, tempDocUri, tempDocName, chatId]);
 
   return (
     <SafeAreaView edges={["right", "left", "bottom"]} style={styles.container}>
-      
-        <ImageBackground
-          source={backgroundImage}
-          style={styles.backgroundImage}
-        >
-          <PageContainer style={{ backgroundColor: 'transparent'}}>
+      <ImageBackground source={backgroundImage} style={styles.backgroundImage}>
+        <PageContainer style={{ backgroundColor: "transparent" }}>
+          {!chatId && (
+            <Bubble text="This is a new chat. Say hi!" type="system" />
+          )}
 
-            {
-              !chatId && <Bubble text='This is a new chat. Say hi!' type="system" />
-            }
+          {errorBannerText !== "" && (
+            <Bubble text={errorBannerText} type="error" />
+          )}
 
-            {
-              errorBannerText !== "" && <Bubble text={errorBannerText} type="error" />
-            }
+          {chatId && (
+            <FlatList
+              ref={(ref) => (flatList.current = ref)}
+              onContentSizeChange={() =>
+                flatList.current.scrollToEnd({ animated: false })
+              }
+              onLayout={() => flatList.current.scrollToEnd({ animated: false })}
+              data={chatMessages}
+              renderItem={(itemData) => {
+                const message = itemData.item;
 
-            {
-              chatId && 
-              <FlatList
-                ref={(ref) => flatList.current = ref}
-                onContentSizeChange={() => flatList.current.scrollToEnd({ animated: false })}
-                onLayout={() => flatList.current.scrollToEnd({ animated: false })}
-                data={chatMessages}
-                renderItem={(itemData) => {
-                  const message = itemData.item;
+                const isOwnMessage = message.sentBy === userData.userId;
 
-                  const isOwnMessage = message.sentBy === userData.userId;
+                let messageType;
+                if (message.type && message.type === "info") {
+                  messageType = "info";
+                } else if (isOwnMessage) {
+                  messageType = "myMessage";
+                } else {
+                  messageType = "theirMessage";
+                }
 
-                  let messageType;
-                  if (message.type && message.type === "info") {
-                    messageType = "info";
-                  }
-                  else if (isOwnMessage) {
-                    messageType = "myMessage";
-                  }
-                  else {
-                    messageType = "theirMessage";
-                  }
+                const sender = message.sentBy && storedUsers[message.sentBy];
+                const name = sender && `${sender.firstName} ${sender.lastName}`;
 
-                  const sender = message.sentBy && storedUsers[message.sentBy];
-                  const name = sender && `${sender.firstName} ${sender.lastName}`;
-
-                  return <Bubble
-                            type={messageType}
-                            text={message.text}
-                            isDeleted={message.isDeleted}
-                            messageId={message.key}
-                            userId={userData.userId}
-                            chatId={chatId}
-                            date={message.sentAt}
-                            name={!chatData.isGroupChat || isOwnMessage ? undefined : name}
-                            setReply={() => setReplyingTo(message)}
-                            replyingTo={message.replyTo && chatMessages.find(i => i.key === message.replyTo)}
-                            imageUrl={message.imageUrl}
-                            documentUrl={message.documentUrl}
-                          />
-                }}
-              />
-            }
-
-
-          </PageContainer>
-
-          {
-            replyingTo &&
-            <ReplyTo
-              text={replyingTo.text}
-              user={storedUsers[replyingTo.sentBy]}
-              onCancel={() => setReplyingTo(null)}
+                return (
+                  <Bubble
+                    type={messageType}
+                    text={message.text}
+                    isDeleted={message.isDeleted}
+                    messageId={message.key}
+                    userId={userData.userId}
+                    chatId={chatId}
+                    date={message.sentAt}
+                    name={
+                      !chatData.isGroupChat || isOwnMessage ? undefined : name
+                    }
+                    setReply={() => setReplyingTo(message)}
+                    replyingTo={
+                      message.replyTo &&
+                      chatMessages.find((i) => i.key === message.replyTo)
+                    }
+                    imageUrl={message.imageUrl}
+                    documentUrl={message.documentUrl}
+                  />
+                );
+              }}
             />
-          }
+          )}
+        </PageContainer>
 
-        </ImageBackground>
+        {replyingTo && (
+          <ReplyTo
+            text={replyingTo.text}
+            user={storedUsers[replyingTo.sentBy]}
+            onCancel={() => setReplyingTo(null)}
+          />
+        )}
+      </ImageBackground>
 
-        { ((chatId && inChat ) || !chatId || isCreatingChat)  &&
-        
+      {((chatId && inChat) || !chatId || isCreatingChat) && (!isBlocked) && (
         <View style={styles.inputContainer}>
           <TouchableOpacity
             style={styles.mediaButton}
@@ -359,10 +421,7 @@ const ChatScreen = (props) => {
           />
 
           {messageText === "" && (
-            <TouchableOpacity
-              style={styles.mediaButton}
-              onPress={takePhoto}
-            >
+            <TouchableOpacity style={styles.mediaButton} onPress={takePhoto}>
               <Feather name="camera" size={24} color={colors.blue} />
             </TouchableOpacity>
           )}
@@ -376,73 +435,72 @@ const ChatScreen = (props) => {
             </TouchableOpacity>
           )}
 
-            <AwesomeAlert
-              show={tempImageUri !== ""}
-              title='Send image?'
-              closeOnTouchOutside={true}
-              closeOnHardwareBackPress={false}
-              showCancelButton={true}
-              showConfirmButton={true}
-              cancelText='Cancel'
-              confirmText="Send image"
-              confirmButtonColor={colors.primary}
-              cancelButtonColor={colors.red}
-              titleStyle={styles.popupTitleStyle}
-              onCancelPressed={() => setTempImageUri("")}
-              onConfirmPressed={uploadImage}
-              onDismiss={() => setTempImageUri("")}
-              customView={(
-                <View>
-                  {
-                    isLoading &&
-                    <ActivityIndicator size='small' color={colors.primary} />
-                  }
-                  {
-                    !isLoading && tempImageUri !== "" &&
-                    <Image source={{ uri: tempImageUri }} style={{ width: 200, height: 200 }} />
-                  }
-                </View>
-              )}
-            />
+          <AwesomeAlert
+            show={tempImageUri !== ""}
+            title="Send image?"
+            closeOnTouchOutside={true}
+            closeOnHardwareBackPress={false}
+            showCancelButton={true}
+            showConfirmButton={true}
+            cancelText="Cancel"
+            confirmText="Send image"
+            confirmButtonColor={colors.primary}
+            cancelButtonColor={colors.red}
+            titleStyle={styles.popupTitleStyle}
+            onCancelPressed={() => setTempImageUri("")}
+            onConfirmPressed={uploadImage}
+            onDismiss={() => setTempImageUri("")}
+            customView={
+              <View>
+                {isLoading && (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                )}
+                {!isLoading && tempImageUri !== "" && (
+                  <Image
+                    source={{ uri: tempImageUri }}
+                    style={{ width: 200, height: 200 }}
+                  />
+                )}
+              </View>
+            }
+          />
 
-            <AwesomeAlert
-              show={tempDocUri !== ""}
-              title='Send document?'
-              closeOnTouchOutside={true}
-              closeOnHardwareBackPress={false}
-              showCancelButton={true}
-              showConfirmButton={true}
-              cancelText='Cancel'
-              confirmText="Send document"
-              confirmButtonColor={colors.primary}
-              cancelButtonColor={colors.red}
-              titleStyle={styles.popupTitleStyle}
-              onCancelPressed={() => setTempDocUri("")}
-              onConfirmPressed={uploadDocument}
-              onDismiss={() => setTempDocUri("")}
-              customView={(
-                <View>
-                  {
-                    isLoading &&
-                    <ActivityIndicator size='small' color={colors.primary} />
-                  }
-                  {
-                    !isLoading && tempDocUri !== "" &&
-                    <Image source={{ uri: tempDocUri }} style={{ width: 200, height: 200 }} />
-                  }
-                </View>
-              )}
-            />
-
-
+          <AwesomeAlert
+            show={tempDocUri !== ""}
+            title="Send document?"
+            closeOnTouchOutside={true}
+            closeOnHardwareBackPress={false}
+            showCancelButton={true}
+            showConfirmButton={true}
+            cancelText="Cancel"
+            confirmText="Send document"
+            confirmButtonColor={colors.primary}
+            cancelButtonColor={colors.red}
+            titleStyle={styles.popupTitleStyle}
+            onCancelPressed={() => setTempDocUri("")}
+            onConfirmPressed={uploadDocument}
+            onDismiss={() => setTempDocUri("")}
+            customView={
+              <View>
+                {isLoading && (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                )}
+                {!isLoading && tempDocUri !== "" && (
+                  <Image
+                    source={{ uri: tempDocUri }}
+                    style={{ width: 200, height: 200 }}
+                  />
+                )}
+              </View>
+            }
+          />
         </View>
-      }
-      {
-        (chatId && !inChat && !isCreatingChat) &&
+      )}
+      {((chatId && !inChat && !isCreatingChat) || isBlocked) && (
         <View style={styles.textContainer}>
-          <Text style = {styles.text}>You can't send messages.</Text>
+          <Text style={styles.text}>You can't send messages.</Text>
         </View>
-      }
+      )}
     </SafeAreaView>
   );
 };
@@ -453,7 +511,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
   screen: {
-    flex: 1
+    flex: 1,
   },
   backgroundImage: {
     flex: 1,
@@ -466,7 +524,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flexDirection: "row",
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   textbox: {
     flex: 1,
@@ -487,16 +545,16 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   popupTitleStyle: {
-    fontFamily: 'medium',
+    fontFamily: "medium",
     letterSpacing: 0.3,
-    color: colors.textColor
+    color: colors.textColor,
   },
   text: {
     alignItems: "center",
     justifyContent: "center",
     marginTop: 10,
-    fontFamily: 'medium',
-  }
+    fontFamily: "medium",
+  },
 });
 
 export default ChatScreen;

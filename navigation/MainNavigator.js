@@ -3,15 +3,16 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { StackActions, useNavigation } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import * as Device from "expo-device";
-import * as Linking from 'expo-linking';
+import * as Linking from "expo-linking";
 import * as Notifications from "expo-notifications";
 import { child, get, getDatabase, off, onValue, ref } from "firebase/database";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView, Platform,
-  View
-} from 'react-native';
+  KeyboardAvoidingView,
+  Platform,
+  View,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import colors from "../constants/colors";
 import commonStyles from "../constants/commonStyles";
@@ -29,16 +30,14 @@ import Timeline from "../screens/Timeline";
 import { setChatsData } from "../store/chatSlice";
 import { setChatMessages, setStarredMessages } from "../store/messagesSlice";
 import { setPostsData } from "../store/postSlice";
-import { setStoredUsers } from "../store/userSlice";
+import { setStoredUsers, updateBlockStatus } from "../store/userSlice";
 import { lastMessage } from "../utils/actions/chatActions";
 import { getFirebaseApp } from "../utils/firebaseHelper";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-
 const TabNavigator = () => {
-
   return (
     <Tab.Navigator
       screenOptions={{
@@ -91,7 +90,6 @@ const TabNavigator = () => {
 };
 
 const StackNavigator = () => {
-
   return (
     <Stack.Navigator>
       <Stack.Group>
@@ -148,7 +146,6 @@ const StackNavigator = () => {
 };
 
 const MainNavigator = (props) => {
-
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
@@ -163,11 +160,9 @@ const MainNavigator = (props) => {
   const responseListener = useRef();
 
   useEffect(() => {
+    const handleDeepLink = () => {};
 
-    const handleDeepLink = () => {
-    };
-
-    const urlListener = Linking.addEventListener('url', handleDeepLink);
+    const urlListener = Linking.addEventListener("url", handleDeepLink);
 
     registerForPushNotificationsAsync().then((token) =>
       setExpoPushToken(token)
@@ -193,7 +188,7 @@ const MainNavigator = (props) => {
 
     return () => {
       urlListener.remove();
-        Notifications.removeNotificationSubscription(
+      Notifications.removeNotificationSubscription(
         notificationListener.current
       );
       Notifications.removeNotificationSubscription(responseListener.current);
@@ -208,7 +203,7 @@ const MainNavigator = (props) => {
     const userChatsRef = child(dbRef, `userChats/${userData.userId}`);
     const refs = [userChatsRef];
 
-    onValue(userChatsRef, (querySnapshot) => {
+    onValue(userChatsRef, async (querySnapshot) => {
       const chatIdsData = querySnapshot.val() || {};
       const chatIds = Object.keys(chatIdsData);
 
@@ -226,12 +221,10 @@ const MainNavigator = (props) => {
 
           const data = chatSnapshot.val();
 
-          
-              if (!data.users.includes(userData.userId)) {
-                return;
-              }
-            
-            
+          if (data.users) {
+            if (!data.users.includes(userData.userId)) {
+              return;
+            }
 
             data.key = chatSnapshot.key;
 
@@ -247,18 +240,26 @@ const MainNavigator = (props) => {
 
               refs.push(userRef);
             });
+          }
 
-            chatsData[chatSnapshot.key] = data;
-            chatsData[chatSnapshot.key].isValid = chatIdsData[chatId];
-            const text = (await lastMessage(userData.userId, chatId)) || "";
-            chatsData[chatId].latestMessage = text;
           
+          chatsData[chatSnapshot.key] = data;
+          chatsData[chatSnapshot.key].isValid = chatIdsData[chatId];
+          const text = (await lastMessage(userData.userId, chatId)) || "";
+          chatsData[chatId].latestMessage = text;
 
           if (chatsFoundCount >= chatIds.length) {
             dispatch(setChatsData({ chatsData }));
             setIsLoading(false);
           }
+
+          // if (!chatIdsData[chatId]) {
+          //   delete chatsData[chatId];
+          // }
+
         });
+
+        
 
         const messagesRef = child(dbRef, `messages/${chatId}`);
         const userMessagesRef = child(
@@ -288,6 +289,24 @@ const MainNavigator = (props) => {
         }
       }
     });
+
+    const userBlocksRef = child(dbRef, `userBlocks/${userData.userId}`);
+    onValue(userBlocksRef, async (snapshot) => {
+      const blockStatus = snapshot.val();
+      dispatch(updateBlockStatus({ userId: userData.userId, blocked: blockStatus }));
+    });
+
+    const usersWhoBlockedRef = child(dbRef, `userBlocks`);
+    onValue(usersWhoBlockedRef, (snapshot) => {
+      const allBlocks = snapshot.val() || {};
+      for (const [blockingUserId, blockedUsers] of Object.entries(allBlocks)) {
+        if (blockedUsers[userData.userId] !== undefined) {
+          const result = blockedUsers[userData.userId];
+          dispatch(updateBlockStatus({ userId: blockingUserId, blocked: result }));
+        }
+      }
+    });
+
 
     const userStarredMessagesRef = child(
       dbRef,

@@ -11,7 +11,7 @@ import {
 import uuid from "react-native-uuid";
 import { getFirebaseApp } from "../firebaseHelper.js";
 import { getUserPushTokens } from "./authActions.js";
-import { addUserChat, getUserChats } from "./userActions.js";
+import { addUserChat } from "./userActions.js";
 
 export const createChat = async (loggedInUserId, chatData) => {
   const app = getFirebaseApp();
@@ -157,10 +157,13 @@ export const deleteUserChat = async (userId, chatId) => {
     const app = getFirebaseApp();
     const dbRef = ref(getDatabase(app));
 
-    await deleteAllMessages(chatId);
+    await deleteAllMessages(userId, chatId);
 
     const userChatsRef = child(dbRef, `userChats/${userId}`);
-    await update(userChatsRef, { [chatId]: false });
+    if (userChatsRef) {
+      await update(userChatsRef, { [chatId]: false });
+    }
+    
   } catch (error) {
     console.log(error);
     throw error;
@@ -419,20 +422,11 @@ export const removeUserFromChat = async (
 ) => {
   const userToRemoveId = userToRemoveData.userId;
   const newUsers = chatData.users.filter((uid) => uid !== userToRemoveId);
-  await updateChatData(chatData.key, userToRemoveData.userId, {
+  await updateChatData(chatData.chatId, userToRemoveData.userId, {
     users: newUsers,
   });
   await removeAdmin(userToRemoveData, chatData);
-  const userChats = await getUserChats(userToRemoveId);
-
-  for (const key in userChats) {
-    const currentChatId = userChats[key];
-
-    if (currentChatId === chatData.key) {
-      await deleteUserChat(userToRemoveId, key);
-      break;
-    }
-  }
+  await deleteUserChat(userToRemoveId, chatData.chatId);
 
   const messageText =
     userLoggedInData.userId === userToRemoveData.userId
@@ -444,13 +438,19 @@ export const removeUserFromChat = async (
 
 export const leaveChat = async (userData, chatData) => {
   const newUsers = chatData.users.filter((uid) => uid !== userData.userId);
+
   await updateChatData(chatData.key, userData.userId, {
     users: newUsers,
   });
-  await deleteUserChat(userData.userId, chatData.chatId);
   await removeAdmin(userData, chatData);
-  
+  await deleteUserChat(userData.userId, chatData.chatId);
+  const remainingAdmins = chatData.admins.filter((uid) => uid !== userData.userId);
 
+  if (remainingAdmins.length === 0 && newUsers.length > 0) {
+    const newAdmin = newUsers[0];
+    await addAdmin(newAdmin,chatData);
+    
+  }
   const messageText = `${userData.firstName} left the chat`;
 
   await sendInfoMessage(chatData.chatId, userData.userId, messageText);
@@ -552,14 +552,14 @@ export const updateInvitationLink = async (chatData) => {
   }
 };
 
-export const addAdmin = async (userData, chatData) => {
+export const addAdmin = async (userId, chatData) => {
   try {
-    const app = getFirebaseApp(); // Assuming getFirebaseApp is defined somewhere
+    const app = getFirebaseApp();
     const dbRef = ref(getDatabase(app));
-    const chatRef = child(dbRef, `chats/${chatData.key}`);
+    const chatRef = child(dbRef, `chats/${chatData.chatId}`);
 
     await update(chatRef, {
-      admins: [...chatData.admins, userData.userId],
+      admins: [...chatData.admins, userId],
     });
 
     console.log("Admin added successfully");
@@ -568,14 +568,14 @@ export const addAdmin = async (userData, chatData) => {
   }
 };
 
-export const removeAdmin = async (userData, chatData) => {
+export const removeAdmin = async (userId, chatData) => {
   try {
     const app = getFirebaseApp();
     const dbRef = ref(getDatabase(app));
-    const chatRef = child(dbRef, `chats/${chatData.key}`);
+    const chatRef = child(dbRef, `chats/${chatData.chatId}`);
 
     const updatedAdmins = chatData.admins.filter(
-      (adminId) => adminId !== userData.userId
+      (adminId) => adminId !== userId
     );
     await update(chatRef, {
       admins: updatedAdmins,
@@ -662,3 +662,32 @@ export const fetchUserMessages = async (userId, chatId) => {
     return null;
   }
 };
+
+export const addBlock = async (userData, blockedUserData) => {
+  try {
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
+
+    await update(child(dbRef, `userBlocks/${userData.userId}`), {
+      [blockedUserData.userId]: true,
+    });
+
+  } catch (error) {
+    console.error("Error adding block:", error.message);
+  }
+};
+
+export const removeBlock = async (userData, blockedUserData) => {
+  try {
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
+
+    await update(child(dbRef, `userBlocks/${userData.userId}`), {
+      [blockedUserData.userId]: false,
+    });
+  } catch (error) {
+    console.log("error removing block. ", error);
+  }
+};
+
+

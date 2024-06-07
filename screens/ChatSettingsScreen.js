@@ -19,7 +19,7 @@ import SubmitButton from "../components/SubmitButton";
 import UserPreview from "../components/UserPreview";
 import colors from "../constants/colors";
 import { deleteChat } from "../store/chatSlice";
-import { addAdmin, addUsersToChat, deleteUserChat, isAdmin, leaveChat, removeAdmin, removeUserFromChat, updateChatData, updateInvitationLink } from "../utils/actions/chatActions";
+import { addAdmin, addUsersToChat, isAdmin, leaveChat, removeAdmin, removeUserFromChat, updateChatData, updateInvitationLink } from "../utils/actions/chatActions";
 import { validateInput } from "../utils/actions/formActions";
 import { reducer } from "../utils/reducers/formReducer";
 
@@ -177,8 +177,6 @@ const ChatSettingsScreen = (props) => {
       setIsLoading(true);
 
       await removeUserFromChat(userData, currentUser, chatData);
-      await deleteUserChat(userData.userId, chatData.chatId);
-      await deleteChat();
       props.navigation.popToTop();
     } catch (error) {
       console.log(error);
@@ -326,10 +324,10 @@ const ChatSettingsScreen = (props) => {
                       }}
                       onPressMakeAdmin={() =>
                         isAdminUser
-                          ? removeAdmin(currentUser, chatData).then(() =>
+                          ? removeAdmin(currentUser.userId, chatData).then(() =>
                               handleGroupItemClose()
                             )
-                          : addAdmin(currentUser, chatData).then(() =>
+                          : addAdmin(currentUser.userId, chatData).then(() =>
                               handleGroupItemClose()
                             )
                       }
@@ -348,12 +346,12 @@ const ChatSettingsScreen = (props) => {
       </ScrollView>
 
       {
-        <SubmitButton
-          title="Leave chat"
-          color={colors.black}
-          onPress={() => leaveGroupChat()}
-          style={{ width: "40%", alignSelf: "center", marginBottom: 20 }}
-        />
+        // <SubmitButton
+        //   title="Leave chat"
+        //   color={colors.black}
+        //   onPress={() => leaveGroupChat()}
+        //   style={{ width: "40%", alignSelf: "center", marginBottom: 20 }}
+        // />
       }
     </PageContainer>
   );
