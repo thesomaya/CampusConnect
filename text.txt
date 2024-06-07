@@ -1,9 +1,12 @@
 Priorities:
-- announcement page delete and edit posts
 - more than one photo and document in posts
+- photos and docs cant be edited
 - photos not working
+- last message problem
+- sign up page
+--------------------------------------------------------------------------------
+Features:
 - think about the courses page, add a lecturer
-- deleting otherUser message by admin in group
 - sending videos
 - download feature for photos videos documents
 - forward messages feature
@@ -13,12 +16,11 @@ Priorities:
 - adding voice messages
 - announcements section in the timeline screen which includes reactions and comments for posts
 - search by student id
-- update settings page
+- update profile settings page
 - group settings to allow only admin to write messages
 - change default group image
 - deleting account
 - dark theme
 - email verification firebase / forgot password
 - updating settings page to add different privacy options (lastseen and online, notifications, theme, storage prefrences) 
-- hide
 

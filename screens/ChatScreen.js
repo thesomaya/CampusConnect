@@ -71,6 +71,7 @@ const ChatScreen = (props) => {
   const storedUsers = useSelector((state) => state.users.storedUsers);
   const storedChats = useSelector((state) => state.chats.chatsData);
   const userBlocks = useSelector((state) => state.users.blockedUsers);
+  
   const showActionSheet = () => {
     ActionSheet.showActionSheetWithOptions(
       {
@@ -407,7 +408,7 @@ const ChatScreen = (props) => {
                     type={messageType}
                     text={message.text}
                     isDeleted={message.isDeleted}
-                    isAdmin={isAdmin}
+                    isAdmin={chatData.isGroupChat ? isAdmin : false}
                     messageId={message.key}
                     userId={userData.userId}
                     chatId={chatId}
@@ -438,7 +439,8 @@ const ChatScreen = (props) => {
         )}
       </ImageBackground>
 
-      {((chatId && inChat) || !chatId || isCreatingChat) && !isBlocked && (
+      {((chatData.isGroupChat && ((chatId && inChat) || !chatId || isCreatingChat)) || (!chatData.isGroupChat && !isBlocked)) && (
+        
         <View style={styles.inputContainer}>
           <TouchableOpacity
             style={styles.mediaButton}
@@ -530,7 +532,7 @@ const ChatScreen = (props) => {
           />
         </View>
       )}
-      {((chatId && !inChat && !isCreatingChat) || isBlocked) && (
+      {((chatData.isGroupChat && ((chatId && !inChat && !isCreatingChat))) || (!chatData.isGroupChat && isBlocked)) && (
         <View style={styles.textContainer}>
           <Text style={styles.text}>You can't send messages.</Text>
         </View>

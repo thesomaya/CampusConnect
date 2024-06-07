@@ -13,6 +13,7 @@ const MenuItem = props => {
 
     const Icon = props.iconPack ?? Feather;
 
+
     return <MenuOption onSelect={props.onSelect}>
         <View style={styles.menuItemContainer}>
             <Text style={styles.menuText}>{props.text}</Text>
@@ -22,8 +23,9 @@ const MenuItem = props => {
 }
 
 const DataItem = props => {
-    const { title, subTitle, image, type, isChecked, icon, chatId } = props;
+    const { title, subTitle, image, type, isChecked, icon, chatId, itemStyle } = props;
     const hideImage = props.hideImage && props.hideImage === true;
+    const titleColor = itemStyle === "disabled" ? colors.lightGrey : colors.textColor;
     const menuRef = useRef(null);
     const id = useRef(uuid.v4());
 
@@ -55,7 +57,7 @@ const DataItem = props => {
 
                     <Text
                         numberOfLines={1}
-                        style={{ ...styles.title, ...{ color: type === "button" ? colors.blue : colors.textColor } }}>
+                        style={{ ...styles.title, ...{ color: type === "button" ? colors.blue : titleColor },  }}>
                         {title}
                     </Text>
 
