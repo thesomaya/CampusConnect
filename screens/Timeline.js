@@ -1,15 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Button,
-    FlatList,
-    Modal,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Button,
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { useSelector } from "react-redux";
@@ -18,12 +18,12 @@ import PostItem from "../components/PostItem";
 import colors from "../constants/colors";
 import { createPost } from "../utils/actions/postActions";
 import {
-    launchImagePicker,
-    uploadImageAsync,
+  launchImagePicker,
+  uploadImageAsync,
 } from "../utils/imagePickerHelper";
 import {
-    launchDocumentPicker,
-    uploadDocumentAsync,
+  launchDocumentPicker,
+  uploadDocumentAsync,
 } from "../utils/launchDocumentPicker";
 
 const Timeline = (props) => {
@@ -36,7 +36,7 @@ const Timeline = (props) => {
   const [postTitle, setPostTitle] = useState("");
   const [postText, setPostText] = useState("");
   const scrollViewRef = useRef(null);
-    const scrollY = useRef(0);
+  const scrollY = useRef(0);
 
   const storedPosts = useSelector((state) => {
     const postsData = state.posts.postsData;
@@ -116,16 +116,17 @@ const Timeline = (props) => {
     setIsLoading(false);
     setModalVisible(false);
   };
-  
-  const handleScroll = event => {
-    scrollY.current = event.nativeEvent.contentOffset.y;
-};
 
-const restoreScrollPosition = () => {
+  const handleScroll = (event) => {
+    scrollY.current = event.nativeEvent.contentOffset.y;
+  };
+
+  const restoreScrollPosition = () => {
     if (scrollViewRef.current) {
-        scrollViewRef.current.scrollTo({ y: scrollY.current, animated: false });
+      scrollViewRef.current.scrollTo({ y: scrollY.current, animated: false });
     }
-};
+  };
+
 
   return (
     <PageContainer>
@@ -157,17 +158,19 @@ const restoreScrollPosition = () => {
             </View>
 
             <TextInput
-              style={styles.titleInput}
+              style={[styles.titleInput, { color: "black", placeholderTextColor: "black" }]}
               placeholder="Write the title here"
               value={postTitle}
               onChangeText={(text) => setPostTitle(text)}
             />
-            <ScrollView style={styles.scrollView}
-            ref={scrollViewRef}
-            onScroll={handleScroll}
-            onContentSizeChange={restoreScrollPosition}>
+            <ScrollView
+              style={styles.scrollView}
+              ref={scrollViewRef}
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
+            >
               <TextInput
-                style={styles.textInput}
+                style={[styles.textInput, { color: "black", placeholderTextColor: "black" }]}
                 placeholder="Write your announcement here"
                 value={postText}
                 onChangeText={(text) => setPostText(text)}
@@ -249,27 +252,33 @@ const styles = StyleSheet.create({
     padding: 15,
     paddingTop: 5,
     borderRadius: 10,
-    width: "80%",
+    width: "90%",
+    maxHeight: "95%",
+    height: "auto",
   },
   titleInput: {
     borderWidth: 1,
-    borderColor: "gray",
+    borderColor: colors.lightGrey,
     borderRadius: 5,
     width: "100%",
     minHeight: 50,
     padding: 10,
     marginBottom: 5,
     marginTop: 5,
+    color: "black",
+    placeholderTextColor: "black",
   },
   textInput: {
     borderWidth: 1,
-    borderColor: "gray",
+    borderColor: colors.lightGrey,
     borderRadius: 5,
     width: "100%",
-    minHeight: 150,
+    minHeight: 200,
     padding: 10,
     marginBottom: 10,
     marginTop: 5,
+    color: "black",
+    placeholderTextColor: "black",
   },
   button: {
     backgroundColor: colors.primary,
@@ -299,7 +308,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   scrollView: {
-    maxHeight: 200,
+    maxHeight: 300,
   },
 });
 

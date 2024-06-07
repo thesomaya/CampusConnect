@@ -1,8 +1,6 @@
 Priorities:
 - announcement page delete and edit posts
 - more than one photo and document in posts
-maybe dispatch it manually
-- assign admin when the only admin leaves the chat
 - photos not working
 - think about the courses page, add a lecturer
 - deleting otherUser message by admin in group
@@ -13,7 +11,7 @@ maybe dispatch it manually
 - creating a poll in chats
 - sending contacts
 - adding voice messages
-- announcements section in the timeline screen which includes reactions and comments for posts 
+- announcements section in the timeline screen which includes reactions and comments for posts
 - search by student id
 - update settings page
 - group settings to allow only admin to write messages
@@ -22,6 +20,5 @@ maybe dispatch it manually
 - dark theme
 - email verification firebase / forgot password
 - updating settings page to add different privacy options (lastseen and online, notifications, theme, storage prefrences) 
-
-
+- hide
 

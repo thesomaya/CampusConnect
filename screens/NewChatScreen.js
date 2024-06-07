@@ -1,16 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Button, TextInput, ActivityIndicator, FlatList } from 'react-native';
-import { HeaderButtons, Item } from 'react-navigation-header-buttons';
-import CustomHeaderButton from '../components/CustomHeaderButton';
-import PageContainer from '../components/PageContainer';
 import { FontAwesome } from '@expo/vector-icons';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import { HeaderButtons, Item } from 'react-navigation-header-buttons';
+import { useDispatch, useSelector } from 'react-redux';
+import CustomHeaderButton from '../components/CustomHeaderButton';
+import DataItem from '../components/DataItem';
+import PageContainer from '../components/PageContainer';
+import ProfileImage from '../components/ProfileImage';
 import colors from '../constants/colors';
 import commonStyles from '../constants/commonStyles';
-import { searchUsers } from '../utils/actions/userActions';
-import DataItem from '../components/DataItem';
-import { useDispatch, useSelector } from 'react-redux';
 import { setStoredUsers } from '../store/userSlice';
-import ProfileImage from '../components/ProfileImage';
+import { searchUsers } from '../utils/actions/userActions';
 
 const NewChatScreen = props => {
 
@@ -105,6 +105,11 @@ const NewChatScreen = props => {
     const userPressed = userId => {
 
         if (isGroupChat) {
+
+          const isBlocker = userBlocks?.[userData.userId]?.[userId] === true || false;
+          const isBlocked = userBlocks?.[userId] === true || false;
+    
+
             const newSelectedUsers = selectedUsers.includes(userId) ?
                 selectedUsers.filter(id => id !== userId) :
                 selectedUsers.concat(userId);
@@ -134,8 +139,7 @@ const NewChatScreen = props => {
                         </View>
                 </View>
             }
-                
-                    
+            
             {
                 isGroupChat &&
                 <View style={styles.selectedUsersContainer}>

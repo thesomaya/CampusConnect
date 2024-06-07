@@ -118,7 +118,7 @@ const ChatSettingsScreen = (props) => {
   );
 
   const shareInvitationLink = () => {
-    return `exp://192.168.1.143:8081/--/joinchat/${chatData.invitationCode}`;
+    return `exp://10.91.8.253:8081/--/joinchat/${chatData.invitationCode}`;
   };
   const invitationLink = shareInvitationLink();
 
@@ -346,12 +346,12 @@ const ChatSettingsScreen = (props) => {
       </ScrollView>
 
       {
-        // <SubmitButton
-        //   title="Leave chat"
-        //   color={colors.black}
-        //   onPress={() => leaveGroupChat()}
-        //   style={{ width: "40%", alignSelf: "center", marginBottom: 20 }}
-        // />
+        <SubmitButton
+          title="Leave chat"
+          color={colors.black}
+          onPress={() => leaveGroupChat()}
+          style={{ width: "40%", alignSelf: "center", marginBottom: 20 }}
+        />
       }
     </PageContainer>
   );

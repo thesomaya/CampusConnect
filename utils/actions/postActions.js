@@ -1,10 +1,18 @@
-import { child, getDatabase, onValue, push, ref } from "firebase/database";
+import { child, getDatabase, onValue, push, ref, remove, update } from "firebase/database";
 import uuid from 'react-native-uuid';
 import { getFirebaseApp } from "../firebaseHelper";
 
 export const createPost = async (loggedInUserId, postTitle, postText, image, document) => {
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
     
+    // Create a new post reference with a push operation to get the unique key
+    const newPostRef = push(child(dbRef, 'posts'));
+    const postId = newPostRef.key;
+    
+    // Create the new post data including the postId
     const newPostData = {
+        postId: postId,
         createdBy: loggedInUserId,
         updatedBy: loggedInUserId,
         title: postTitle,
@@ -16,17 +24,15 @@ export const createPost = async (loggedInUserId, postTitle, postText, image, doc
         docUrl: document,
     };
 
-    const app = getFirebaseApp();
-    const dbRef = ref(getDatabase(app));
-    const newPost = await push(child(dbRef, 'posts'), newPostData);
+    // Update the new post data to the database reference
+    await update(newPostRef, newPostData);
 
-    return newPost.key;
-}
+    return postId;
+};
 
 export const updatePost = async (postId, newData) => {
     const app = getFirebaseApp();
     const dbRef = ref(getDatabase(app));
-
     await update(child(dbRef, `posts/${postId}`), newData);
 };
 

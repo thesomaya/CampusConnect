@@ -1,4 +1,5 @@
 import { Feather } from "@expo/vector-icons";
+import { child, getDatabase, off, onValue, ref } from "firebase/database";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -30,6 +31,7 @@ import {
   sendTextMessage,
   updateUserChat,
 } from "../utils/actions/chatActions";
+import { getFirebaseApp } from "../utils/firebaseHelper.js";
 import {
   launchImagePicker,
   openCamera,
@@ -50,6 +52,7 @@ const ChatScreen = (props) => {
   const [tempDocUri, setTempDocUri] = useState("");
   const [tempDocName, setTempDocName] = useState("");
   const [inChat, setInChat] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
@@ -178,14 +181,44 @@ const ChatScreen = (props) => {
     checkUser();
   }, [chatUsers, chatId]);
 
+  useEffect(() => {
+    if (chatId) {
+      const app = getFirebaseApp();
+      const dbRef = ref(getDatabase(app));
+      const userChatRef = child(
+        dbRef,
+        `userChats/${userData.userId}/${chatId}`
+      );
+
+      const handleChatStatusChange = (snapshot) => {
+        const chatStatus = snapshot.val();
+        setInChat(chatStatus === true);
+      };
+
+      onValue(userChatRef, handleChatStatusChange);
+
+      return () => {
+        off(userChatRef, handleChatStatusChange);
+      };
+    }
+  }, [chatId, userData.userId]);
+
+  useEffect(() => {
+    if (chatData.admins) {
+      const result = chatData.admins.includes(userData.userId);
+      setIsAdmin(result);
+    }
+  }, [chatData, userData]);
+
   const otherUserId = chatUsers.find((uid) => uid !== userData.userId);
 
   useEffect(() => {
+    console.log("otherUserId: ", otherUserId);
+
     if (otherUserId) {
       const isBlocker =
         userBlocks?.[userData.userId]?.[otherUserId] === true || false;
-      const isBlocked =
-        userBlocks?.[otherUserId] === true || false;
+      const isBlocked = userBlocks?.[otherUserId] === true || false;
 
       if (isBlocker === true || isBlocked === true) {
         setIsBlocked(true);
@@ -374,6 +407,7 @@ const ChatScreen = (props) => {
                     type={messageType}
                     text={message.text}
                     isDeleted={message.isDeleted}
+                    isAdmin={isAdmin}
                     messageId={message.key}
                     userId={userData.userId}
                     chatId={chatId}
@@ -404,7 +438,7 @@ const ChatScreen = (props) => {
         )}
       </ImageBackground>
 
-      {((chatId && inChat) || !chatId || isCreatingChat) && (!isBlocked) && (
+      {((chatId && inChat) || !chatId || isCreatingChat) && !isBlocked && (
         <View style={styles.inputContainer}>
           <TouchableOpacity
             style={styles.mediaButton}

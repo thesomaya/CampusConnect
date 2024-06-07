@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import logo from '../assets/images/CampusConnectLogo.png';
+import logo from '../assets/images/CA.png';
 import PageContainer from '../components/PageContainer';
 import SignInForm from '../components/SignInForm';
 import SignUpForm from '../components/SignUpForm';

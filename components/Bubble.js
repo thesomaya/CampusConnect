@@ -1,33 +1,33 @@
 import {
-    AntDesign,
-    Feather,
-    FontAwesome,
-    Ionicons
+  AntDesign,
+  Feather,
+  FontAwesome,
+  Ionicons
 } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import React, { useRef } from "react";
 import {
-    Image,
-    Linking,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  Image,
+  Linking,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import {
-    Menu,
-    MenuOption,
-    MenuOptions,
-    MenuTrigger,
+  Menu,
+  MenuOption,
+  MenuOptions,
+  MenuTrigger,
 } from "react-native-popup-menu";
 import uuid from "react-native-uuid";
 import { useSelector } from "react-redux";
 import colors from "../constants/colors";
 import {
-    deleteMessageforAll,
-    deleteMessageforUser,
-    starMessage,
+  deleteMessageforAll,
+  deleteMessageforUser,
+  starMessage,
 } from "../utils/actions/chatActions";
 import { openPDF, openPowerPoint, openWord } from "../utils/openFiles";
 
@@ -60,6 +60,7 @@ const Bubble = (props) => {
     text,
     type,
     isDeleted,
+    isAdmin,
     messageId,
     chatId,
     userId,
@@ -267,7 +268,7 @@ const Bubble = (props) => {
                 iconPack={Ionicons}
                 onSelect={setReply}
               />
-              {type === "myMessage" && (
+              {
                 <MenuItem
                   text="Delete for Me"
                   icon="delete"
@@ -276,8 +277,8 @@ const Bubble = (props) => {
                     deleteMessageforUser(userId, chatId, messageId)
                   }
                 />
-              )}
-              {type === "myMessage" && (
+              }
+              {(type === "myMessage" || isAdmin) &&(
                 <MenuItem
                   text="Delete for All"
                   icon="delete"

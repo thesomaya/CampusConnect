@@ -241,7 +241,6 @@ const MainNavigator = (props) => {
               refs.push(userRef);
             });
           }
-
           
           chatsData[chatSnapshot.key] = data;
           chatsData[chatSnapshot.key].isValid = chatIdsData[chatId];

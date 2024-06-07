@@ -1,499 +1,238 @@
-import { Feather } from "@expo/vector-icons";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, FlatList, Image, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import ActionSheet from 'react-native-action-sheet';
-import AwesomeAlert from 'react-native-awesome-alerts';
-import { SafeAreaView } from "react-native-safe-area-context";
-import { HeaderButtons, Item } from "react-navigation-header-buttons";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from '@react-navigation/native';
+import { format } from "date-fns";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
+import React, { useLayoutEffect, useState } from "react";
+import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSelector } from "react-redux";
-import backgroundImage from "../assets/images/chatbackground.png";
-import Bubble from "../components/Bubble";
-import CustomHeaderButton from "../components/CustomHeaderButton";
-import PageContainer from "../components/PageContainer";
-import ReplyTo from "../components/ReplyTo";
 import colors from "../constants/colors";
-import { createChat, isUserInChat, sendDocument, sendImage, sendTextMessage } from "../utils/actions/chatActions";
-import { updateUserChat } from "../utils/actions/userActions";
-import { launchImagePicker, openCamera, uploadImageAsync } from "../utils/imagePickerHelper";
-import { launchDocumentPicker, uploadDocumentAsync } from '../utils/launchDocumentPicker';
+import { deletePost, updatePost } from "../utils/actions/postActions";
 
-const ChatScreen = (props) => {
-  const [chatUsers, setChatUsers] = useState([]);
-  const [messageText, setMessageText] = useState("");
-  const [chatId, setChatId] = useState(props.route?.params?.chatId);
-  const [errorBannerText, setErrorBannerText] = useState("");
-  const [replyingTo, setReplyingTo] = useState();
-  const [tempImageUri, setTempImageUri] = useState("");
-  const [tempDocUri, setTempDocUri] = useState("");
-  const [tempDocName, setTempDocName] = useState("");
-  const [inChat, setInChat] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isCreatingChat, setIsCreatingChat] = useState(false);
-  const options = ['Cancel', 'Photos', 'Document', 'Contact', 'Location', 'Poll'];
-  const cancelButtonIndex = 0;
+const PostDetails = ({ route }) => {
+  const { post } = route.params;
+  const navigation = useNavigation();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(post.title);
+  const [editedText, setEditedText] = useState(post.text);
+  const userData = useSelector((state) => state.auth.userData);
 
-  const flatList = useRef();
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: 'Post Details',
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+          <Ionicons name="arrow-back" size={24} color="black" style={{ marginLeft: 15 }} />
+        </TouchableOpacity>
+      ),
+      headerRight: () => (
+        userData.selectedRole === "facultyMember" && (
+          <View style={{ flexDirection: 'row' }}>
+            {!isEditing && (
+              <TouchableOpacity onPress={handleEdit}>
+                <Ionicons name="create-outline" size={24} color="black" style={{ marginRight: 15 }} />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={handleDelete}>
+              <Ionicons name="trash" size={24} color="black" style={{ marginRight: 15 }} />
+            </TouchableOpacity>
+            {isEditing && (
+              <TouchableOpacity onPress={() => handleSave(editedTitle,editedText)}>
+                <Ionicons name="save-outline" size={24} color="black" style={{ marginRight: 15 }} />
+              </TouchableOpacity>
+            )}
+          </View>
+        )
+      ),
+    });
+  }, [navigation, isEditing, userData.selectedRole]);
 
-  const userData = useSelector(state => state.auth.userData);
-  const storedUsers = useSelector(state => state.users.storedUsers);
-  const storedChats = useSelector(state => state.chats.chatsData);
-  const showActionSheet = () => {
-      ActionSheet.showActionSheetWithOptions(
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Post",
+      "Are you sure you want to delete this post?",
+      [
         {
-          options,
-          cancelButtonIndex,
+          text: "Cancel",
+          style: "cancel",
         },
-        (buttonIndex) => {
-          handleActionSheetPress(buttonIndex);
-        }
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deletePost(post.postId);
+              navigation.goBack();
+            } catch (error) {
+              console.error("Error deleting post:", error);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = async () => {
+    try {
+      const newData = {
+        title: editedTitle,
+        text: editedText,
+        updatedAt: new Date().toISOString(),
+      };
+      await updatePost(post.postId, newData);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error updating post:", error);
+    }
+  };
+
+  const handleDownload = async () => {
+    try {
+      const downloadResumable = FileSystem.createDownloadResumable(
+        post.docUrl,
+        FileSystem.documentDirectory + "downloadedDocument"
       );
-    };
+      const { uri } = await downloadResumable.downloadAsync();
 
-    const handleActionSheetPress = (buttonIndex) => {
-      switch (buttonIndex) {
-        case 1:
-          pickImage();
-          break;
-        case 2:
-          pickDocument();
-          break;
-        case 3:
-          // Contact
-          break;
-        case 4:
-          // Location
-          break;
-        case 5:
-          // Poll
-          break;
-        default:
-          // Cancel
-          break;
+      if (uri) {
+        await Sharing.shareAsync(uri);
+      } else {
+        console.error("Failed to download document.");
       }
-    };
-
-
-  const chatMessages = useSelector(state => {
-    if (!chatId) return [];
-
-    const chatMessagesData = state.messages.messagesData[chatId];
-
-    if (!chatMessagesData) return [];
-
-    const messageList = [];
-    for (const key in chatMessagesData) {
-      const message = chatMessagesData[key];
-
-      messageList.push({
-        key,
-        ...message
-      });
-    }
-
-    return messageList;
-  });
-
-  const chatData = (chatId && storedChats[chatId]) || props.route?.params?.newChatData || {};
-
-  if (chatId && storedChats[chatId]) {
-    if (storedChats[chatId].isValid === false) {
-        storedChats[chatId].isValid = true;
-        updateUserChat(userData.userId, chatId, { isValid: true });
-    }
-}
-  const getChatTitleFromName = () => {
-    const otherUserId = chatUsers.find(uid => uid !== userData.userId);
-    const otherUserData = storedUsers[otherUserId];
-
-    return otherUserData && `${otherUserData.firstName} ${otherUserData.lastName}`;
-  }
-
-  useEffect(() => {
-    if (!chatData) return;
-    
-    props.navigation.setOptions({
-      headerTitle: chatData.chatName ?? getChatTitleFromName(),
-      headerRight: () => {
-        return <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
-          {
-            chatId && 
-            <Item
-              title="Chat settings"
-              iconName="settings-outline"
-              onPress={() => chatData.isGroupChat ?
-                props.navigation.navigate("ChatSettings", { chatId }) :
-                props.navigation.navigate("Contact", { uid: chatUsers.find(uid => uid !== userData.userId) })}
-            />
-          }
-        </HeaderButtons>
-      }
-    })
-    setChatUsers(chatData.users)
-  }, [chatUsers])
-
-  useEffect( () =>  {
-    const checkUser = async () => {
-      setIsCreatingChat(true);
-      const response = await isUserInChat(userData.userId, chatId);
-      setInChat(response);
-      setIsCreatingChat(false);
-
-    }
-    checkUser();
-    
-  }, [chatUsers, chatId])
-
-  const sendMessage = useCallback(async () => {
-
-    try {
-      let id = chatId;
-      if (!id) {
-        setIsCreatingChat(true);
-        id = await createChat(userData.userId, props.route.params.newChatData);
-        setChatId(id);
-        setIsCreatingChat(false);
-      }
-
-      await sendTextMessage(id, userData, messageText, replyingTo && replyingTo.key, chatUsers);
-      setMessageText("");
-      setReplyingTo(null);
-
     } catch (error) {
-      console.log(error);
-      console.log(error.message);
-      console.log(error.stack);
-      setErrorBannerText("Message failed to send");
-      setTimeout(() => setErrorBannerText(""), 5000);
+      console.error("Error downloading document:", error);
     }
-  }, [messageText, chatId]);
+  };
 
-  const takePhoto = useCallback(async () => {
-    try {
-      const tempUri = await openCamera();
-      if (!tempUri) return;
-
-      setTempImageUri(tempUri);
-    } catch (error) {
-      console.log(error);
-      console.log(error.message);
-      console.log(error.stack);
-    }
-  }, [tempImageUri]);
-
-  const pickImage = useCallback(async () => {
-    try {
-      const tempUri = await launchImagePicker();
-      if (!tempUri) return;
-
-      setTempImageUri(tempUri);
-    } catch (error) {
-      console.log(error);
-      console.log(error.message);
-      console.log(error.stack);
-    }
-  }, [tempImageUri]);
-
-  const pickDocument = useCallback(async () => {
-    try {
-      const documentInfo = await launchDocumentPicker();
-      if (!documentInfo) return;
-  
-      const { name, uri } = documentInfo;
-      
-      setTempDocUri(uri);
-      setTempDocName(name);
-
-    } catch (error) {
-      console.log(error);
-      console.log(error.message);
-      console.log(error.stack);
-    }
-  }, [tempDocUri, tempDocName]);
-
-  const uploadImage = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-
-      let id = chatId;
-      if (!id) {
-        // No chat Id. Create the chat
-        id = await createChat(userData.userId, props.route.params.newChatData);
-        setChatId(id);
-      }
-
-      const uploadUrl = await uploadImageAsync(tempImageUri, true);
-      setIsLoading(false);
-
-      await sendImage(id, userData, uploadUrl, replyingTo && replyingTo.key, chatUsers)
-      setReplyingTo(null);
-      setTimeout(() => setTempImageUri(""), 100);
-      
-    } catch (error) {
-      console.log(error);
-      console.log(error.message);
-      console.log(error.stack);
-      
-    }
-  }, [isLoading, tempImageUri, chatId])
-
-  const uploadDocument = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-
-      let id = chatId;
-      if (!id) {
-        // No chat Id. Create the chat
-        id = await createChat(userData.userId, props.route.params.newChatData);
-        setChatId(id);
-      }
-
-      const uploadUrl = await uploadDocumentAsync(tempDocUri, true);
-      setIsLoading(false);
-      await sendDocument(id, userData, uploadUrl, replyingTo && replyingTo.key, chatUsers, tempDocName)
-      setReplyingTo(null);
-      setTempDocUri("");
-      setTempDocName("");
-      
-    } catch (error) {
-      console.log(error);
-      console.log(error.message);
-      console.log(error.stack);
-      
-    }
-  }, [isLoading, tempDocUri, tempDocName, chatId])
+  const formattedDate = format(new Date(post.updatedAt), "dd.MM.yyyy HH:mm");
 
   return (
-    <SafeAreaView edges={["right", "left", "bottom"]} style={styles.container}>
-      
-        <ImageBackground
-          source={backgroundImage}
-          style={styles.backgroundImage}
-        >
-          <PageContainer style={{ backgroundColor: 'transparent'}}>
-
-            {
-              !chatId && <Bubble text='This is a new chat. Say hi!' type="system" />
-            }
-
-            {
-              errorBannerText !== "" && <Bubble text={errorBannerText} type="error" />
-            }
-
-            {
-              chatId && 
-              <FlatList
-                ref={(ref) => flatList.current = ref}
-                onContentSizeChange={() => flatList.current.scrollToEnd({ animated: false })}
-                onLayout={() => flatList.current.scrollToEnd({ animated: false })}
-                data={chatMessages}
-                renderItem={(itemData) => {
-                  const message = itemData.item;
-
-                  const isOwnMessage = message.sentBy === userData.userId;
-
-                  let messageType;
-                  if (message.type && message.type === "info") {
-                    messageType = "info";
-                  }
-                  else if (isOwnMessage) {
-                    messageType = "myMessage";
-                  }
-                  else {
-                    messageType = "theirMessage";
-                  }
-
-                  const sender = message.sentBy && storedUsers[message.sentBy];
-                  const name = sender && `${sender.firstName} ${sender.lastName}`;
-
-                  return <Bubble
-                            type={messageType}
-                            text={message.text}
-                            messageId={message.key}
-                            userId={userData.userId}
-                            chatId={chatId}
-                            date={message.sentAt}
-                            name={!chatData.isGroupChat || isOwnMessage ? undefined : name}
-                            setReply={() => setReplyingTo(message)}
-                            replyingTo={message.replyTo && chatMessages.find(i => i.key === message.replyTo)}
-                            imageUrl={message.imageUrl}
-                            documentUrl={message.documentUrl}
-                          />
-                }}
-              />
-            }
-
-
-          </PageContainer>
-
-          {
-            replyingTo &&
-            <ReplyTo
-              text={replyingTo.text}
-              user={storedUsers[replyingTo.sentBy]}
-              onCancel={() => setReplyingTo(null)}
-            />
-          }
-
-        </ImageBackground>
-
-        { ((chatId && inChat ) || !chatId || isCreatingChat)  &&
-        
-        <View style={styles.inputContainer}>
-          <TouchableOpacity
-            style={styles.mediaButton}
-            onPress={showActionSheet}
-          >
-            <Feather name="plus" size={24} color={colors.blue} />
-          </TouchableOpacity>
-
-          <TextInput
-            style={styles.textbox}
-            value={messageText}
-            onChangeText={(text) => setMessageText(text)}
-            onSubmitEditing={sendMessage}
-          />
-
-          {messageText === "" && (
-            <TouchableOpacity
-              style={styles.mediaButton}
-              onPress={takePhoto}
-            >
-              <Feather name="camera" size={24} color={colors.blue} />
+    <View style={styles.container}>
+      <TextInput
+        style={[styles.title, isEditing && styles.titleInput]}
+        value={editedTitle}
+        onChangeText={setEditedTitle}
+        editable={isEditing}
+        placeholder="Title"
+      />
+      <View style={styles.separator} />
+      <ScrollView>
+        <TextInput
+          style={[styles.text, isEditing && styles.textInput]}
+          value={editedText}
+          onChangeText={setEditedText}
+          editable={isEditing}
+          placeholder="Content"
+          multiline
+        />
+        {post.imageUrl && (
+          <Image source={{ uri: post.imageUrl }} style={styles.imageContainer} />
+        )}
+        {post.docUrl && (
+          <View style={styles.downloadContainer}>
+            <TouchableOpacity onPress={handleDownload} style={styles.downloadContainer}>
+              <Text style={styles.downloadText}>Download file</Text>
+              <Ionicons name="download" size={24} color="black" />
             </TouchableOpacity>
-          )}
-
-          {messageText !== "" && (
-            <TouchableOpacity
-              style={{ ...styles.mediaButton, ...styles.sendButton }}
-              onPress={sendMessage}
-            >
-              <Feather name="send" size={20} color={"white"} />
-            </TouchableOpacity>
-          )}
-
-            <AwesomeAlert
-              show={tempImageUri !== ""}
-              title='Send image?'
-              closeOnTouchOutside={true}
-              closeOnHardwareBackPress={false}
-              showCancelButton={true}
-              showConfirmButton={true}
-              cancelText='Cancel'
-              confirmText="Send image"
-              confirmButtonColor={colors.primary}
-              cancelButtonColor={colors.red}
-              titleStyle={styles.popupTitleStyle}
-              onCancelPressed={() => setTempImageUri("")}
-              onConfirmPressed={uploadImage}
-              onDismiss={() => setTempImageUri("")}
-              customView={(
-                <View>
-                  {
-                    isLoading &&
-                    <ActivityIndicator size='small' color={colors.primary} />
-                  }
-                  {
-                    !isLoading && tempImageUri !== "" &&
-                    <Image source={{ uri: tempImageUri }} style={{ width: 200, height: 200 }} />
-                  }
-                </View>
-              )}
-            />
-
-            <AwesomeAlert
-              show={tempDocUri !== ""}
-              title='Send document?'
-              closeOnTouchOutside={true}
-              closeOnHardwareBackPress={false}
-              showCancelButton={true}
-              showConfirmButton={true}
-              cancelText='Cancel'
-              confirmText="Send document"
-              confirmButtonColor={colors.primary}
-              cancelButtonColor={colors.red}
-              titleStyle={styles.popupTitleStyle}
-              onCancelPressed={() => setTempDocUri("")}
-              onConfirmPressed={uploadDocument}
-              onDismiss={() => setTempDocUri("")}
-              customView={(
-                <View>
-                  {
-                    isLoading &&
-                    <ActivityIndicator size='small' color={colors.primary} />
-                  }
-                  {
-                    !isLoading && tempDocUri !== "" &&
-                    <Image source={{ uri: tempDocUri }} style={{ width: 200, height: 200 }} />
-                  }
-                </View>
-              )}
-            />
-
-
-        </View>
-      }
-      {
-        (chatId && !inChat && !isCreatingChat) &&
-        <View style={styles.textContainer}>
-          <Text style = {styles.text}>You can't send messages.</Text>
-        </View>
-      }
-    </SafeAreaView>
+          </View>
+        )}
+      </ScrollView>
+      <View style={styles.separator} />
+      <View style={styles.dateTimeContainer}>
+        <Text style={styles.dateText}>Updated At </Text>
+        <Text style={styles.date}>{formattedDate}</Text>
+      </View>
+      {isEditing && (
+        <TouchableOpacity onPress={() => handleSave()} style={styles.saveButton}>
+          <Text style={styles.saveButtonText}>Save</Text>
+        </TouchableOpacity>
+      )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: "column",
+    padding: 20,
   },
-  screen: {
-    flex: 1
-  },
-  backgroundImage: {
-    flex: 1,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    height: 50,
-  },
-  textContainer: {
-    flexDirection: "row",
-    justifyContent: 'center',
-  },
-  textbox: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 50,
-    borderColor: colors.lightGrey,
-    marginHorizontal: 15,
-    paddingHorizontal: 12,
-  },
-  mediaButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    width: 35,
-  },
-  sendButton: {
-    backgroundColor: colors.blue,
-    borderRadius: 50,
-    padding: 8,
-  },
-  popupTitleStyle: {
-    fontFamily: 'medium',
-    letterSpacing: 0.3,
-    color: colors.textColor
+  title: {
+    fontWeight: "bold",
+    fontSize: 20,
+    marginBottom: 10,
   },
   text: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  dateText: {
+    fontSize: 16,
+    marginBottom: 10,
+    flex: 1,
+  },
+  imageContainer: {
+    width: 200,
+    height: 200,
+    marginBottom: 10,
+    borderRadius: 10,
+    borderColor: colors.lightGrey,
+    borderWidth: 1,
+  },
+  downloadContainer: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    marginBottom: 10,
+  },
+  downloadText: {
+    fontWeight: "bold",
+    textDecorationLine: "underline",
+    marginRight: 10,
+  },
+  dateTimeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  date: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: colors.lightGrey,
+    width: "100%",
+    marginVertical: 10,
+  },
+  titleInput: {
+    borderWidth: 1,
+    borderColor: colors.lightGrey,
+    borderRadius: 5,
+    padding: 10,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: colors.lightGrey,
+    borderRadius: 5,
+    padding: 10,
+    minHeight: 200,
+  },
+  saveButton: {
+    backgroundColor: colors.primary,
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 10,
-    fontFamily: 'medium',
-  }
+  },
+  saveButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 });
 
-export default ChatScreen;
+export default PostDetails;
