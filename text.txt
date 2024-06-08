@@ -1,6 +1,5 @@
 Priorities:
-- more than one photo and document in posts
-- photos and docs cant be edited
+
 - last message problem
 --------------------------------------------------------------------------------
 Features:

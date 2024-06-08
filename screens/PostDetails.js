@@ -179,14 +179,21 @@ const PostDetails = ({ route }) => {
 
   const handleDownload = async (uri) => {
     try {
-      const downloadResumable = FileSystem.createDownloadResumable(
-        uri,
-        FileSystem.documentDirectory + uri.split("/").pop()
-      );
+      const downloadResumable = FileSystem.createDownloadResumable(uri, FileSystem.documentDirectory + "downloadedFile");
+      const response = await fetch(uri); // Fetching the file to get its headers
+      const contentType = response.headers.get("Content-Type");
+      const extension = contentType.split("/").pop(); // Extracting extension from Content-Type
+  
       const { uri: localUri } = await downloadResumable.downloadAsync();
-
-      if (localUri) {
-        await Sharing.shareAsync(localUri);
+      const newLocalUri = `${localUri}.${extension}`; // Adding extension to localUri
+  
+      await FileSystem.moveAsync({
+        from: localUri,
+        to: newLocalUri,
+      });
+  
+      if (newLocalUri) {
+        await Sharing.shareAsync(newLocalUri);
       } else {
         console.error("Failed to download document.");
       }
@@ -194,7 +201,7 @@ const PostDetails = ({ route }) => {
       console.error("Error downloading document:", error);
     }
   };
-
+  
   const handleDeleteImage = (index) => {
     const updatedImages = [...editedImages];
     updatedImages.splice(index, 1);
