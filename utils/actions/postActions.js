@@ -1,4 +1,4 @@
-import { child, getDatabase, onValue, push, ref, remove, update } from "firebase/database";
+import { child, get, getDatabase, onValue, push, ref, remove, update } from "firebase/database";
 import uuid from 'react-native-uuid';
 import { getFirebaseApp } from "../firebaseHelper";
 
@@ -73,4 +73,48 @@ export const readAllPosts = () => {
 export const generateInvitationLink = () => {
     const invitationCode = uuid.v4();
     return invitationCode;
+}
+
+export const updatePostImagesAndDocs = async (postId, updatedImages, updatedDocs) => {
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
+
+    // Construct updated post data
+    const updatedData = {};
+    if (updatedImages.length > 0) {
+        updatedData['images'] = updatedImages;
+    }
+    if (updatedDocs.length > 0) {
+        updatedData['docs'] = updatedDocs;
+    }
+
+    // Update the post data in the database
+    await update(child(dbRef, `posts/${postId}`), updatedData);
+};
+
+// Function to delete an image from storage
+export const deleteImageFromStorage = async (imageUrl) => {
+    const imageRef = storage.refFromURL(imageUrl);
+    await imageRef.delete();
+};
+
+// Function to delete a document from storage
+export const deleteDocumentFromStorage = async (docUrl) => {
+    const docRef = storage.refFromURL(docUrl);
+    await docRef.delete();
+};
+
+export const getPostCreatorName = async (userId) => {
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
+    const snapshot = await get(child(dbRef, `users/${userId}`));
+    console.log(userId);
+    if (snapshot.exists()) {
+        const userData = snapshot.val();
+        return userData.firstLast;
+    } else {
+        return null;
+    }
+
+
 }
