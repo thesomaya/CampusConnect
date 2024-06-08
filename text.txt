@@ -1,9 +1,7 @@
 Priorities:
 - more than one photo and document in posts
 - photos and docs cant be edited
-- photos not working
 - last message problem
-- sign up page
 --------------------------------------------------------------------------------
 Features:
 - think about the courses page, add a lecturer

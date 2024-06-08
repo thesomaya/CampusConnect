@@ -1,7 +1,7 @@
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { StackActions, useNavigation } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
+import { CardStyleInterpolators, createStackNavigator } from "@react-navigation/stack";
 import * as Device from "expo-device";
 import * as Linking from "expo-linking";
 import * as Notifications from "expo-notifications";
@@ -21,6 +21,7 @@ import ChatScreen from "../screens/ChatScreen";
 import ChatSettingsScreen from "../screens/ChatSettingsScreen";
 import ContactScreen from "../screens/ContactScreen";
 import CoursesScreen from "../screens/CoursesScreen";
+import CreatePostScreen from '../screens/CreatePostScreen';
 import DataListScreen from "../screens/DataListScreen";
 import JoinChatScreen from "../screens/JoinChatScreen";
 import NewChatScreen from "../screens/NewChatScreen";
@@ -132,15 +133,29 @@ const StackNavigator = () => {
           }}
         />
       </Stack.Group>
+
       <Stack.Group screenOptions={{ presentation: "containedModal" }}>
         <Stack.Screen name="JoinChat" component={JoinChatScreen} />
       </Stack.Group>
+
       <Stack.Group screenOptions={{ presentation: "containedModal" }}>
         <Stack.Screen name="NewChat" component={NewChatScreen} />
       </Stack.Group>
+
       <Stack.Group screenOptions={{ presentation: "containedModal" }}>
         <Stack.Screen name="PostDetails" component={PostDetails} />
       </Stack.Group>
+
+      <Stack.Group 
+        screenOptions={{
+          cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS, // This provides the modal-like transition effect
+        }}>
+        <Stack.Screen 
+          name="CreatePost" 
+          component={CreatePostScreen} 
+          options={{ headerShown: false, presentation: 'modal' }}
+        />
+        </Stack.Group>
     </Stack.Navigator>
   );
 };

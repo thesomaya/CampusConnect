@@ -1,14 +1,13 @@
+import { Feather, FontAwesome } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
+import { ActivityIndicator, Alert } from 'react-native';
+import { useDispatch } from 'react-redux';
 import Input from '../components/Input';
 import SubmitButton from '../components/SubmitButton';
-import { Feather, FontAwesome } from '@expo/vector-icons';
-
+import colors from '../constants/colors';
+import { signUp } from '../utils/actions/authActions';
 import { validateInput } from '../utils/actions/formActions';
 import { reducer } from '../utils/reducers/formReducer';
-import { signUp } from '../utils/actions/authActions';
-import { ActivityIndicator, Alert} from 'react-native';
-import colors from '../constants/colors';
-import { useDispatch } from 'react-redux';
 
 const initialState = {
     inputValues: {

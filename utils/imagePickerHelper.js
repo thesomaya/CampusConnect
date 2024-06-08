@@ -1,8 +1,8 @@
 import * as ImagePicker from 'expo-image-picker';
-import { getFirebaseApp } from './firebaseHelper';
-import uuid from 'react-native-uuid';
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
-
+import { Platform } from "react-native";
+import uuid from 'react-native-uuid';
+import { getFirebaseApp } from './firebaseHelper';
 
 export const launchImagePicker = async () => {
     await checkMediaPermissions();

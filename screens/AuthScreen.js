@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import logo from '../assets/images/CA.png';
+import logo from "../assets/images/campus_connect_logo.png";
 import PageContainer from '../components/PageContainer';
 import SignInForm from '../components/SignInForm';
 import SignUpForm from '../components/SignUpForm';
@@ -14,7 +14,6 @@ const AuthScreen = props => {
     
     return <SafeAreaView style={{ flex: 1}}>
         <PageContainer>
-            <ScrollView>
 
                 <KeyboardAvoidingView
                     style={styles.keyboardAvoidingView}
@@ -27,13 +26,13 @@ const AuthScreen = props => {
                             source={logo}
                             resizeMode='contain' />
                     </View>
-
-                    {
-                        isSignUp ?
-                        <SignUpForm /> :
-                        <SignInForm />
-                    }
-
+                    <View style={styles.formContainer}>
+                        {
+                            isSignUp ?
+                            <SignUpForm /> :
+                            <SignInForm />
+                        }
+                    </View>
                     <TouchableOpacity
                         onPress={() => setIsSignUp(prevState => !prevState)}
                         style={styles.linkContainer}>
@@ -42,7 +41,6 @@ const AuthScreen = props => {
 
                 </KeyboardAvoidingView>
 
-            </ScrollView>
         </PageContainer>
     </SafeAreaView>
 };
@@ -59,16 +57,21 @@ const styles = StyleSheet.create({
         letterSpacing: 0.3
     },
     imageContainer: {
-        justifyContent: 'center',
-        alignItems: 'center'
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        marginVertical: 20,
     },
     image: {
-        width: '80%'
+        width: 400,
+        height: 100,
     },
     keyboardAvoidingView: {
         flex: 1,
-        justifyContent: 'center'
-    }
+        justifyContent: 'center',
+    },
+    formContainer: {
+        justifyContent: 'center',
+    },
 })
 
 export default AuthScreen;

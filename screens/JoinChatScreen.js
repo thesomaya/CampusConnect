@@ -62,7 +62,7 @@ const JoinChatScreen = ({ route }) => {
     console.log("Joining chat");
     if (!userInChat) {
       await joinChat(userData, chatData);
-      setUserInChat(true); // Manually setting userInChat to true after joining
+      setUserInChat(true);
     }
     handleNavigation();
   };
