@@ -1,27 +1,29 @@
 import { AntDesign, Ionicons } from "@expo/vector-icons";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 import { useSelector } from "react-redux";
 import colors from "../constants/colors";
 import { createPost } from "../utils/actions/postActions";
 import {
-    launchImagePicker,
-    uploadImageAsync,
+  launchImagePicker,
+  uploadImageAsync,
 } from "../utils/imagePickerHelper";
 import {
-    launchDocumentPicker,
-    uploadDocumentAsync,
+  launchDocumentPicker,
+  uploadDocumentAsync,
 } from "../utils/launchDocumentPicker";
 
 const CreatePostScreen = ({ navigation }) => {
@@ -31,8 +33,6 @@ const CreatePostScreen = ({ navigation }) => {
   const userData = useSelector((state) => state.auth.userData);
   const [postTitle, setPostTitle] = useState("");
   const [postText, setPostText] = useState("");
-  const scrollViewRef = useRef(null);
-  const scrollY = useRef(0);
 
   const pickImage = useCallback(async () => {
     try {
@@ -75,7 +75,7 @@ const CreatePostScreen = ({ navigation }) => {
   };
 
   const handleDeleteDocument = (index) => {
-    console.log("Deleting image at index:", index);
+    console.log("Deleting document at index:", index);
 
     const updatedDocs = [...tempDocs];
     updatedDocs.splice(index, 1);
@@ -100,7 +100,6 @@ const CreatePostScreen = ({ navigation }) => {
       return [];
     }
   }, [tempDocs]);
-
 
   const handlePost = async () => {
     setIsLoading(true);
@@ -128,9 +127,65 @@ const CreatePostScreen = ({ navigation }) => {
     setIsLoading(false);
     navigation.goBack();
   };
+
+  const renderItem = ({ item }) => {
+    if (item.key === "inputTitle") {
+      return (
+        <TextInput
+          style={styles.titleInput}
+          placeholder="Write the title here"
+          value={postTitle}
+          onChangeText={(text) => setPostTitle(text)}
+        />
+      );
+    } else if (item.key === "inputText") {
+      return (
+        <ScrollView>
+        <TextInput
+          style={styles.textInput}
+          placeholder="Write your post here"
+          value={postText}
+          onChangeText={(text) => setPostText(text)}
+          multiline
+        />
+        </ScrollView>
+      );
+    } else if (item.type === "image") {
+      return (
+        <View style={styles.imageWrapper}>
+          <Image source={{ uri: item.key }} style={styles.image} />
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleDeleteImage(item.index)}
+          >
+            <AntDesign name="closecircle" size={18} color={colors.red} />
+          </TouchableOpacity>
+        </View>
+      );
+    } else if (item.type === "doc") {
+      return (
+        <View style={styles.documentContainer}>
+          <Ionicons name="document-outline" size={30} color="black" />
+          <Text style={styles.documentName}>{item.name}</Text>
+          <TouchableOpacity
+            style={styles.deleteDocButton}
+            onPress={() => handleDeleteDocument(item.index)}
+          >
+            <AntDesign name="closecircle" size={18} color={colors.red} />
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return null;
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={80}
+      >
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.closeButton}
@@ -148,15 +203,10 @@ const CreatePostScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
-        <TextInput
-          style={styles.titleInput}
-          placeholder="Write the title here"
-          value={postTitle}
-          onChangeText={(text) => setPostTitle(text)}
-        />
         <FlatList
           data={[
-            { key: "input" },
+            { key: "inputTitle" },
+            { key: "inputText" },
             ...tempImages.map((uri, index) => ({
               key: uri,
               type: "image",
@@ -169,62 +219,20 @@ const CreatePostScreen = ({ navigation }) => {
               index,
             })),
           ]}
-          renderItem={({ item }) => {
-            if (item.key === "input") {
-              return (
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Write your post here"
-                  value={postText}
-                  onChangeText={(text) => setPostText(text)}
-                  multiline
-                />
-              );
-            } else if (item.type === "image") {
-              return (
-                <View style={styles.imageWrapper}>
-                  <Image source={{ uri: item.key }} style={styles.image} />
-                  <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={() => handleDeleteImage(item.index)}
-                  >
-                    <AntDesign
-                      name="closecircle"
-                      size={18}
-                      color={colors.red}
-                    />
-                  </TouchableOpacity>
-                </View>
-              );
-            } else if (item.type === "doc") {
-              return (
-                <View style={styles.documentContainer}>
-                  <Ionicons name="document-outline" size={30} color="black" />
-                  <Text style={styles.documentName}>{item.name}</Text>
-                  <TouchableOpacity
-                    style={styles.deleteDocButton}
-                    onPress={() => handleDeleteDocument(item.index)}
-                  >
-                    <AntDesign
-                      name="closecircle"
-                      size={18}
-                      color={colors.red}
-                    />
-                  </TouchableOpacity>
-                </View>
-              );
-            }
-          }}
-          ListFooterComponent={() => null}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.key}
+          contentContainerStyle={styles.contentContainer}
+          ListFooterComponent={() => (
+            !isLoading ? (
+              <TouchableOpacity style={styles.postButton} onPress={handlePost}>
+                <Text style={styles.postButtonText}>Post</Text>
+              </TouchableOpacity>
+            ) : (
+              <ActivityIndicator size="small" />
+            )
+          )}
         />
-
-        {!isLoading && (
-          <TouchableOpacity style={styles.postButton} onPress={handlePost}>
-            <Text style={styles.postButtonText}>Post</Text>
-          </TouchableOpacity>
-        )}
-        {isLoading && <ActivityIndicator size="small" />}
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -268,7 +276,7 @@ const styles = StyleSheet.create({
     borderColor: colors.lightGrey,
     borderRadius: 5,
     width: "100%",
-    minHeight: 500,
+    minHeight: 200,
     padding: 10,
     marginBottom: 10,
   },
@@ -279,9 +287,6 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     marginRight: 10,
-  },
-  docName: {
-    marginBottom: 5,
   },
   postButton: {
     backgroundColor: colors.primary,
@@ -310,7 +315,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.primary,
   },
-
   deleteDocButton: {
     marginLeft: 10,
   },
@@ -318,7 +322,6 @@ const styles = StyleSheet.create({
     position: "relative",
     marginBottom: 10,
   },
-
   deleteButton: {
     position: "absolute",
     top: 5,
@@ -326,13 +329,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
     backgroundColor: "transparent",
   },
-  imageContainer: {
-    width: "100%",
-    aspectRatio: 1,
-    borderRadius: 10,
-    borderColor: colors.lightGrey,
-    borderWidth: 1,
-    position: "relative",
+  contentContainer: {
+    paddingBottom: 20,
   },
 });
 

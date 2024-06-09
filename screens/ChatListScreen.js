@@ -1,5 +1,5 @@
 import { AntDesign, Ionicons } from '@expo/vector-icons';
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -24,6 +24,7 @@ const ChatListScreen = (props) => {
   const dispatch = useDispatch();
   const selectedUser = props.route?.params?.selectedUserId;
   const selectedUserList = props.route?.params?.selectedUsers;
+  const [lastMessage, setLastMessage] = useState("");
   const userData = useSelector((state) => state.auth.userData);
   const storedUsers = useSelector((state) => state.users.storedUsers);
   const userChats = useSelector((state) => {
@@ -35,6 +36,56 @@ const ChatListScreen = (props) => {
 
   const chatName = props.route?.params?.chatName;
 
+  // useEffect(() => {
+  //   const app = getFirebaseApp();
+  //   const dbRef = ref(getDatabase(app));
+
+  //   const chatKeys = Object.keys(userChats);
+  //   chatKeys.forEach((chatId) => {
+  //     const messagesRef = child(dbRef, `messages/${chatId}`);
+  //     const userMessagesRef = child(dbRef, `userMessages/${userData.userId}/${chatId}`);
+
+  //     const handleUserMessages = (userMessagesSnapshot) => {
+  //       const messageIdsData = userMessagesSnapshot.val() || {};
+  //       const messageIds = Object.keys(messageIdsData);
+
+  //       const handleMessages = (messagesSnapshot) => {
+  //         const messagesData = messagesSnapshot.val() || {};
+  //         messageIds.forEach((messageId) => {
+  //           if (messagesData[messageId]) {
+  //             console.log(messagesData[messageId]);
+  //             setLastMessage(messagesData[messageId].text);
+  //           }
+  //         });
+  //       };
+
+  //       onValue(messagesRef, handleMessages);
+
+  //       // Cleanup messages listener
+     
+
+  //     onValue(userMessagesRef, handleUserMessages);
+  //     return () => {
+  //       off(messagesRef, handleMessages);
+  //     };
+  //   };
+  //     // Cleanup userMessages listener
+  //     return () => {
+  //       off(userMessagesRef, handleUserMessages);
+  //     };
+  //   });
+
+  //   // Ensure to remove all listeners when component unmounts
+  //   return () => {
+  //     chatKeys.forEach((chatId) => {
+  //       const userMessagesRef = child(dbRef, `userMessages/${userData.userId}/${chatId}`);
+  //       const messagesRef = child(dbRef, `messages/${chatId}`);
+  //       off(userMessagesRef);
+  //       off(messagesRef);
+  //     });
+  //   };
+  // }, [userData.userId, userChats]);
+  
   useEffect(() => {
     props.navigation.setOptions({
       headerRight: () => (
@@ -151,6 +202,7 @@ const ChatListScreen = (props) => {
 
           let title = "";
           const subTitle = chatData.latestMessageText || "New chat";
+          //const subTitle = lastMessage;
           let image = "";
 
           if (isGroupChat) {
@@ -175,6 +227,7 @@ const ChatListScreen = (props) => {
                 subTitle={subTitle}
                 image={image}
                 chatId={chatId}
+                isGroup={chatData.isGroupChat}
                 onPress={() =>
                   props.navigation.navigate("ChatScreen", { chatId })
                 }

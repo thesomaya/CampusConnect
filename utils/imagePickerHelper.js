@@ -9,7 +9,7 @@ export const launchImagePicker = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images, 
         allowsEditing: true, 
-        aspect: [1,1],
+        //aspect: [1,1],
         quality: 1,
     });
 
@@ -28,7 +28,7 @@ export const openCamera = async () => {
     const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images, 
         allowsEditing: true, 
-        aspect: [1,1],
+        //aspect: [1,1],
         quality: 1,
     });
 

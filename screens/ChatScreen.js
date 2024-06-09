@@ -60,9 +60,9 @@ const ChatScreen = (props) => {
     "Cancel",
     "Photos",
     "Document",
-    "Contact",
-    "Location",
-    "Poll",
+    // "Contact",
+    // "Location",
+    // "Poll",
   ];
   const cancelButtonIndex = 0;
 
@@ -92,15 +92,15 @@ const ChatScreen = (props) => {
       case 2:
         pickDocument();
         break;
-      case 3:
-        // Contact
-        break;
-      case 4:
-        // Location
-        break;
-      case 5:
-        // Poll
-        break;
+      // case 3:
+      //   // Contact
+      //   break;
+      // case 4:
+      //   // Location
+      //   break;
+      // case 5:
+      //   // Poll
+      // break;
       default:
         // Cancel
         break;
@@ -214,7 +214,6 @@ const ChatScreen = (props) => {
   const otherUserId = chatUsers.find((uid) => uid !== userData.userId);
 
   useEffect(() => {
-    console.log("otherUserId: ", otherUserId);
 
     if (otherUserId) {
       const isBlocker =

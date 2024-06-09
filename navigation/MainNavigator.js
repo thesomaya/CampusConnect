@@ -32,12 +32,10 @@ import { setChatsData } from "../store/chatSlice";
 import { setChatMessages, setStarredMessages } from "../store/messagesSlice";
 import { setPostsData } from "../store/postSlice";
 import { setStoredUsers, updateBlockStatus } from "../store/userSlice";
-import { lastMessage } from "../utils/actions/chatActions";
 import { getFirebaseApp } from "../utils/firebaseHelper";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
-
 const TabNavigator = () => {
   return (
     <Tab.Navigator
@@ -164,6 +162,7 @@ const MainNavigator = (props) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
+  const [lastMessageText, setLastMessageText] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   const userData = useSelector((state) => state.auth.userData);
@@ -259,27 +258,20 @@ const MainNavigator = (props) => {
           
           chatsData[chatSnapshot.key] = data;
           chatsData[chatSnapshot.key].isValid = chatIdsData[chatId];
-          const text = (await lastMessage(userData.userId, chatId)) || "";
-          chatsData[chatId].latestMessage = text;
-
+          
+          // if(chatsData[chatId]){
+          //   chatsData[chatId].latestMessage = lastMessageText;
+          //   console.log(chatsData[chatId].latestMessage);
+          // }
           if (chatsFoundCount >= chatIds.length) {
             dispatch(setChatsData({ chatsData }));
             setIsLoading(false);
           }
-
-          // if (!chatIdsData[chatId]) {
-          //   delete chatsData[chatId];
-          // }
-
+          
         });
 
-        
-
         const messagesRef = child(dbRef, `messages/${chatId}`);
-        const userMessagesRef = child(
-          dbRef,
-          `userMessages/${userData.userId}/${chatId}`
-        );
+        const userMessagesRef = child(dbRef,`userMessages/${userData.userId}/${chatId}`);
         refs.push(messagesRef);
         refs.push(userMessagesRef);
 
@@ -294,7 +286,11 @@ const MainNavigator = (props) => {
               const messageId = messageIds[i];
               messagesData[messageId].isValid = messageIdsData[messageId];
             }
+
+            //setLastMessageText(await lastMessage(userData.userId, chatId));
+            
             dispatch(setChatMessages({ chatId, messagesData }));
+          
           });
         });
 

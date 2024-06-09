@@ -111,7 +111,7 @@ export const getPostCreatorName = async (userId) => {
     console.log(userId);
     if (snapshot.exists()) {
         const userData = snapshot.val();
-        return userData.firstLast;
+        return `${userData.firstName} ${userData.lastName}`;
     } else {
         return null;
     }

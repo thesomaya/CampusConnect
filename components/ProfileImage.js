@@ -1,19 +1,21 @@
-import React, { useState } from  'react';
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { ActivityIndicator, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import userImage from '../assets/images/defaultimage.png';
-import colors from '../constants/colors';
-import { launchImagePicker, uploadImageAsync } from '../utils/imagePickerHelper';
-import { updateSignedInUserData } from '../utils/actions/authActions';
 import { useDispatch } from 'react-redux';
+import userImage from '../assets/images/defaultimage.png';
+import groupImage from "../assets/images/groupchatimage.png";
+import colors from '../constants/colors';
 import { updateLoggedInUserData } from '../store/authSlice';
+import { updateSignedInUserData } from '../utils/actions/authActions';
 import { updateChatData } from '../utils/actions/chatActions';
+import { launchImagePicker, uploadImageAsync } from '../utils/imagePickerHelper';
 
 const ProfileImage = props => {
     const dispatch = useDispatch();
 
-    const source = props.uri ?  { uri: props.uri } : userImage;
+    const isGroup = props.isGroup;
+    const source = props.uri ?  { uri: props.uri } : isGroup ? groupImage : userImage;
 
     const [image, setImage] = useState(source);
     const [isLoading, setIsLoading] = useState(false);
@@ -23,6 +25,8 @@ const ProfileImage = props => {
 
     const userId = props.userId;
     const chatId = props.chatId;
+
+
 
     const pickImage = async () => {
         try {

@@ -502,7 +502,7 @@ export const joinChat = async (userData, chatData) => {
     users: existingUsers.concat(userData.userId),
   });
 
-  const messageText = `${userData.firstName} joined  the chat`;
+  const messageText = `${userData.firstName} joined the chat`;
   await sendInfoMessage(chatData.chatId, userData.userId, messageText);
 };
 

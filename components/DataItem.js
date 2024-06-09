@@ -23,7 +23,7 @@ const MenuItem = props => {
 }
 
 const DataItem = props => {
-    const { title, subTitle, image, type, isChecked, icon, chatId, itemStyle } = props;
+    const { title, subTitle, image, type, isChecked, icon, chatId, itemStyle , isGroup} = props;
     const hideImage = props.hideImage && props.hideImage === true;
     const titleColor = itemStyle === "disabled" ? colors.lightGrey : colors.textColor;
     const menuRef = useRef(null);
@@ -42,6 +42,7 @@ const DataItem = props => {
                     <ProfileImage
                         uri={image}
                         size={imageSize}
+                        isGroup={isGroup}
                     />
                 }
 

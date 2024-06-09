@@ -201,6 +201,7 @@ const ChatSettingsScreen = (props) => {
           showEditButton={true}
           size={80}
           chatId={chatId}
+          isGroup={chatData.isGroupChat}
           userId={userData.userId}
           uri={chatData.chatImage}
         />

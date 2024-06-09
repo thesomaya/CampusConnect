@@ -5,8 +5,9 @@ import {
   Ionicons
 } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   Linking,
   StyleSheet,
@@ -158,28 +159,42 @@ const Bubble = (props) => {
     text.startsWith("exp");
 
   const handleOpenURL = async (url) => {
-    // Check if the URL can be opened by your app
     const supported = await Linking.canOpenURL(url);
-    /*
-        if (supported) {
-          // Handle deep link within your app
-          if (url.startsWith('exp')) {
-            // Extract path from URL (remove scheme and prefix)
-            const path = url.replace('exp', '');
-            // Navigate to the specified screen based on path
-            // (Your navigation logic here)
-          } else {
-            // Open the URL in the default browser
-            await Linking.openURL(url);
-          }
-        } else {
-          // Show an error message or fallback behavior
-          alert(`Cannot open this URL: ${url}`);
-        }*/
   };
 
   const isStarred = isUserMessage && starredMessages[messageId] !== undefined;
   const replyingToUser = replyingTo && storedUsers[replyingTo.sentBy];
+  
+  const [imageSize, setImageSize] = useState(null);
+
+  useEffect(() => {
+    if (imageUrl) {
+      Image.getSize(
+        imageUrl,
+        (width, height) => {
+          const aspectRatio = width / height;
+          const maxWidth = 500;
+          const maxHeight = 500;
+          let finalWidth = width;
+          let finalHeight = height;
+
+          if (width > maxWidth) {
+            finalWidth = maxWidth;
+            finalHeight = maxWidth / aspectRatio;
+          }
+          if (finalHeight > maxHeight) {
+            finalHeight = maxHeight;
+            finalWidth = maxHeight * aspectRatio;
+          }
+          setImageSize({ width: finalWidth, height: finalHeight });
+        },
+        (error) => {
+          console.log("Error getting image size:", error);
+        }
+      );
+    }
+  }, [imageUrl]);
+
   return (
     <View style={wrapperStyle}>
       <Container
@@ -214,10 +229,15 @@ const Bubble = (props) => {
             </Text>
           )}
 
-          {imageUrl && (
-            <Image source={{ uri: imageUrl }} style={styles.image} />
+          {imageUrl && imageSize && !isDeleted &&(
+            <Image
+              source={{ uri: imageUrl }}
+              style={[styles.image, { width: imageSize.width, height: imageSize.height }]}
+              resizeMode="contain"
+            />
           )}
-          {!imageUrl && documentUrl && (
+          {!isDeleted && imageUrl && !imageSize && <ActivityIndicator size="large" color={colors.blue} />}
+          {!imageUrl && documentUrl && !isDeleted && (
             <TouchableOpacity onPress={() => handleOpenDocument(documentUrl)}>
               <View style={styles.documentContainer}>
                 <Ionicons
@@ -306,6 +326,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderColor: "#E2DACC",
     borderWidth: 1,
+    maxWidth: '100%',  // Ensure the container can expand to its parent's width
   },
   text: {
     fontFamily: "regular",
@@ -345,9 +366,10 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   image: {
-    width: 300,
-    height: 300,
-    marginBottom: 5,
+    width: '100%',  // Ensure the image scales correctly
+    height: undefined,
+    aspectRatio: 1,
+    resizeMode: 'contain',
   },
   link: {
     color: colors.blue,

@@ -5,6 +5,7 @@ import CourseItem from '../components/CourseItem';
 import PageContainer from '../components/PageContainer';
 import PageTitle from '../components/PageTitle';
 import colors from '../constants/colors';
+import { getPostCreatorName } from "../utils/actions/postActions";
 
 const CoursesScreen = props => {
 
@@ -68,16 +69,16 @@ const CoursesScreen = props => {
         const fetchCreatorNames = async () => {
             const names = {};
             for (const chat of filteredUserChats) {
+
                 const createdBy = chat.createdBy;
-                if (createdBy && !names[createdBy]) {
-                    const creator = storedUsers[createdBy];
-                    if (creator) {
-                        names[createdBy] = `${creator.firstName} ${creator.lastName}`;
-                    }
+                const creatorName = await getPostCreatorName(createdBy);
+                if (creatorName) {
+                    names[createdBy] = creatorName;
                 }
+                }
+                setCreatorNames(names);
             }
-            setCreatorNames(names);
-        };
+        
 
         fetchCreatorNames();
     }, [storedUsers]);
